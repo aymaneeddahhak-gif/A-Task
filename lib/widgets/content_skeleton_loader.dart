@@ -183,26 +183,24 @@ class HomeScreenSkeleton extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
-                          // "Good Morning" greeting skeleton
-                          SkeletonBox(width: 86, height: 12, borderRadius: 6),
+                          // Mode label skeleton (No "Good"!)
+                          SkeletonBox(width: 64, height: 12, borderRadius: 6),
                           SizedBox(height: 6),
                           // "AYMANE" name skeleton
-                          SkeletonBox(width: 110, height: 18, borderRadius: 6),
+                          SkeletonBox(width: 100, height: 18, borderRadius: 6),
                         ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: const [
-                      // Mode button circle (42x42)
-                      SkeletonBox(width: 42, height: 42, shape: BoxShape.circle),
-                      SizedBox(width: 8),
-                      // Notification bell circle (42x42)
-                      SkeletonBox(width: 42, height: 42, shape: BoxShape.circle),
-                    ],
-                  ),
+                  // Notification bell circle (40x40)
+                  const SkeletonBox(width: 40, height: 40, shape: BoxShape.circle),
                 ],
               ),
+
+              const SizedBox(height: 14),
+
+              // Animated 4-Mode Selector Dock skeleton (Auto • Morning • Afternoon • Night)
+              const SkeletonBox(width: double.infinity, height: 38, borderRadius: 20),
 
               const SizedBox(height: 18),
 

@@ -371,7 +371,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
     final bool isNight = mode == 2;
     final bool isAfternoon = mode == 1;
 
-    final String greeting = isNight ? 'Good Night' : (isAfternoon ? 'Good Afternoon' : 'Good Morning');
+    final String greeting = isNight ? 'Night' : (isAfternoon ? 'Afternoon' : 'Morning');
     final Color greetingColor = isNight
         ? const Color(0xFF94A3B8)
         : (isAfternoon ? const Color(0xFFB45309) : const Color(0xFF475569));
@@ -822,7 +822,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
       gradientColors = [const Color(0xFF0F172A), const Color(0xFF1E293B), const Color(0xFFFAF8F5)];
     }
 
-    final String greeting = isNight ? 'Good Night' : (isAfternoon ? 'Good Afternoon' : 'Good Morning');
+    final String greeting = isNight ? 'Night' : (isAfternoon ? 'Afternoon' : 'Morning');
     final Color textColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
 
     return Container(

@@ -33,12 +33,29 @@ class HomeScreen extends StatelessWidget {
     final isAfternoon = mode == 1;
     final Color softDownColor = provider.softAtmosphereColor;
 
-    final String greetingText = isNight
-        ? 'Good Night'
-        : (isAfternoon ? 'Good Afternoon' : 'Good Morning');
-    final Color greetingColor = isNight
-        ? const Color(0xFF94A3B8)
-        : (isAfternoon ? const Color(0xFFB45309) : const Color(0xFF475569));
+    // Active Atmosphere mode label & icon (No "Good" text!)
+    final String modeLabel;
+    final IconData modeIcon;
+    final Color greetingColor;
+    if (provider.atmosphereMode == 'auto') {
+      modeLabel = 'Auto';
+      modeIcon = Icons.brightness_auto_rounded;
+      greetingColor = isNight
+          ? const Color(0xFF38BDF8)
+          : (isAfternoon ? const Color(0xFFEA580C) : const Color(0xFF0284C7));
+    } else if (mode == 0) {
+      modeLabel = 'Morning';
+      modeIcon = Icons.wb_sunny_rounded;
+      greetingColor = const Color(0xFF0284C7);
+    } else if (mode == 1) {
+      modeLabel = 'Afternoon';
+      modeIcon = Icons.wb_twilight_rounded;
+      greetingColor = const Color(0xFFEA580C);
+    } else {
+      modeLabel = 'Night';
+      modeIcon = Icons.nightlight_round;
+      greetingColor = const Color(0xFF94A3B8);
+    }
     final Color nameColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
     final Color headlineColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
 
@@ -207,18 +224,19 @@ class HomeScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             children: [
-              // 1. Top Header Bar: User Avatar, AYMANE greeting, Atmosphere Mode Chooser & Notifications
+              // 1. Top Header Bar: User Avatar, AYMANE with Mode Text (No "Good"!), and Notification Bell
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Left: Avatar + "Good Morning AYMANE"
+                  // Left: Avatar + Mode Text (No "Good"!) + Name
                   Row(
                     children: [
                       GestureDetector(
                         onTap: () => provider.setSelectedTab(3),
                         child: Container(
-                          width: 46,
-                          height: 46,
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: const Color(0xFF1E293B),
@@ -232,15 +250,15 @@ class HomeScreen extends StatelessWidget {
                           ),
                           child: ClipOval(
                             child: SizedBox(
-                              width: 46,
-                              height: 46,
+                              width: 44,
+                              height: 44,
                               child: Transform.scale(
                                 scale: provider.avatarScale,
                                 alignment: Alignment(provider.avatarOffsetX, provider.avatarOffsetY),
                                 child: Image.asset(
                                   'assets/images/profile.png',
-                                  width: 46,
-                                  height: 46,
+                                  width: 44,
+                                  height: 44,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => const Center(
                                     child: Text(
@@ -258,23 +276,35 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            greetingText,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              color: greetingColor,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                modeIcon,
+                                size: 13,
+                                color: greetingColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                modeLabel, // "Auto", "Morning", "Afternoon", "Night" (No "Good"!)
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: greetingColor,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.1,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 2),
                           Text(
                             provider.userName, // "AYMANE"
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: nameColor,
                               letterSpacing: -0.2,
@@ -285,102 +315,56 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
 
-                  // Right: Atmosphere Mode Chooser + Notification bell
-                  Row(
-                    children: [
-                      // Atmosphere Mode Chooser Button (Replaces documentation button on top right!)
-                      GestureDetector(
-                        onTap: () => _showAtmosphereModeBottomSheet(context, provider),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: isNight ? const Color(0xFF334155) : const Color(0xFF191A20),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isNight ? const Color(0xFF475569) : Colors.transparent,
+                  // Right: Notification Bell (Frosted White circle with Red Dot)
+                  GestureDetector(
+                    onTap: () => provider.openNotifications(),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: isNight ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.95),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.notifications_outlined,
+                            size: 20,
+                            color: isNight ? Colors.white : const Color(0xFF191A20),
+                          ),
+                          if (unreadNotifs > 0)
+                            Positioned(
+                              top: 9,
+                              right: 9,
+                              child: Container(
+                                width: 7,
+                                height: 7,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFE53935),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                _getAtmosphereIcon(provider.atmosphereMode, mode),
-                                size: 19,
-                                color: _getAtmosphereIconColor(provider.atmosphereMode, mode),
-                              ),
-                              if (provider.atmosphereMode == 'auto')
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF38BDF8),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-
-                      // Notification Bell (Frosted White circle with Red Dot)
-                      GestureDetector(
-                        onTap: () => provider.openNotifications(),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: isNight ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.95),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 6,
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                Icons.notifications_outlined,
-                                size: 20,
-                                color: isNight ? Colors.white : const Color(0xFF191A20),
-                              ),
-                              if (unreadNotifs > 0)
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    width: 7,
-                                    height: 7,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFE53935),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 14),
+
+              // Animated 4-Mode Selector Dock: Auto • Morning • Afternoon • Night
+              // Strictly inside app screen shape! Zero browser bottom sheet!
+              _buildAtmosphereModeSelector(provider, isNight),
 
               const SizedBox(height: 18),
 
@@ -665,183 +649,135 @@ class HomeScreen extends StatelessWidget {
     return const Color(0xFFFDE047);
   }
 
-  void _showAtmosphereModeBottomSheet(BuildContext context, TaskProvider provider) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 20,
-                offset: Offset(0, -4),
-              ),
-            ],
+  Widget _buildAtmosphereModeSelector(TaskProvider provider, bool isNight) {
+    final currentMode = provider.atmosphereMode;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isNight
+            ? const Color(0xFF1E293B).withOpacity(0.95)
+            : Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top drag pill
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Atmosphere & Lighting',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      '85% Spread',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Choose how the ambient sky gradient adapts above your tasks:',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-              ),
-              const SizedBox(height: 16),
-
-              // Option 1: Auto Mode
-              _buildAtmosphereOptionTile(
-                ctx,
-                provider,
-                id: 'auto',
-                emoji: '🔄',
-                title: 'Auto (Real-time Clock)',
-                subtitle: 'Syncs automatically: Morning, Sunset, or Night',
-                isSelected: provider.atmosphereMode == 'auto',
-              ),
-              const SizedBox(height: 8),
-
-              // Option 2: Morning
-              _buildAtmosphereOptionTile(
-                ctx,
-                provider,
-                id: 'morning',
-                emoji: '🌅',
-                title: 'Good Morning',
-                subtitle: 'Soft sky-blue atmosphere with gentle sun flare',
-                isSelected: provider.atmosphereMode == 'morning',
-              ),
-              const SizedBox(height: 8),
-
-              // Option 3: Afternoon (Warm Sunset)
-              _buildAtmosphereOptionTile(
-                ctx,
-                provider,
-                id: 'afternoon',
-                emoji: '☀️',
-                title: 'Good Afternoon (Warm Sunset)',
-                subtitle: 'Rich golden amber & sunset coral glow',
-                isSelected: provider.atmosphereMode == 'afternoon',
-              ),
-              const SizedBox(height: 8),
-
-              // Option 4: Night
-              _buildAtmosphereOptionTile(
-                ctx,
-                provider,
-                id: 'night',
-                emoji: '🌙',
-                title: 'Good Night',
-                subtitle: 'Midnight dark blue sky with shimmering stars ✨',
-                isSelected: provider.atmosphereMode == 'night',
-              ),
-            ],
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildModeItem(
+              provider: provider,
+              modeKey: 'auto',
+              icon: Icons.brightness_auto_rounded,
+              title: 'Auto',
+              isSelected: currentMode == 'auto',
+              isNight: isNight,
+              activeIconColor: const Color(0xFF38BDF8),
+            ),
           ),
-        );
-      },
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildModeItem(
+              provider: provider,
+              modeKey: 'morning',
+              icon: Icons.wb_sunny_rounded,
+              title: 'Morning',
+              isSelected: currentMode == 'morning',
+              isNight: isNight,
+              activeIconColor: const Color(0xFF38BDF8),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildModeItem(
+              provider: provider,
+              modeKey: 'afternoon',
+              icon: Icons.wb_twilight_rounded,
+              title: 'Afternoon',
+              isSelected: currentMode == 'afternoon',
+              isNight: isNight,
+              activeIconColor: const Color(0xFFF97316),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildModeItem(
+              provider: provider,
+              modeKey: 'night',
+              icon: Icons.nightlight_round,
+              title: 'Night',
+              isSelected: currentMode == 'night',
+              isNight: isNight,
+              activeIconColor: const Color(0xFFFDE047),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildAtmosphereOptionTile(
-    BuildContext ctx,
-    TaskProvider provider, {
-    required String id,
-    required String emoji,
+  Widget _buildModeItem({
+    required TaskProvider provider,
+    required String modeKey,
+    required IconData icon,
     required String title,
-    required String subtitle,
     required bool isSelected,
+    required bool isNight,
+    required Color activeIconColor,
   }) {
     return GestureDetector(
-      onTap: () {
-        provider.setAtmosphereMode(id);
-        Navigator.pop(ctx);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      onTap: () => provider.setAtmosphereMode(modeKey),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF1F5F9) : Colors.white,
+          color: isSelected
+              ? (isNight ? const Color(0xFF334155) : const Color(0xFF191A20))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.5 : 1,
-          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isNight ? 0.35 : 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 22)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-                  ),
-                ],
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected
+                  ? activeIconColor
+                  : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              title, // "Auto", "Morning", "Afternoon", "Night" (No "Good"!)
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected
+                    ? Colors.white
+                    : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF0F172A), size: 20)
-            else
-              const Icon(Icons.circle_outlined, color: Color(0xFFCBD5E1), size: 20),
           ],
         ),
       ),
