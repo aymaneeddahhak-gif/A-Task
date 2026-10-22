@@ -586,14 +586,8 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                                   width: 46,
                                   height: 46,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Image.asset(
-                                    'profile.png',
-                                    width: 46,
-                                    height: 46,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Center(
-                                      child: Text('AD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    ),
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Text('AD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                               ),

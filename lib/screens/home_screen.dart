@@ -242,25 +242,13 @@ class HomeScreen extends StatelessWidget {
                                   width: 46,
                                   height: 46,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Image.asset(
-                                    'profile.png',
-                                    width: 46,
-                                    height: 46,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.network(
-                                      'profile.png',
-                                      width: 46,
-                                      height: 46,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Center(
-                                        child: Text(
-                                          'AD',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Text(
+                                      'AD',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),

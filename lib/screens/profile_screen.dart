@@ -124,31 +124,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: height,
       fit: fit,
       errorBuilder: (context, error, stackTrace) {
-        return Image.asset(
-          'profile.png',
-          width: width,
-          height: height,
-          fit: fit,
-          errorBuilder: (context, error, stackTrace) {
-            return Image.network(
-              'profile.png',
-              width: width,
-              height: height,
-              fit: fit,
-              errorBuilder: (context, error, stackTrace) {
-                return Center(
-                  child: Text(
-                    'AD',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: (width != null && width < 60) ? 16 : 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              },
-            );
-          },
+        return Center(
+          child: Text(
+            'AD',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: (width != null && width < 60) ? 16 : 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         );
       },
     );

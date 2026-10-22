@@ -40,3 +40,8 @@ debug.keystore
 # Environment & Archives
 .env
 remix-task-planner.zip
+
+# AI Studio & IDE Metadata
+.aistudio/
+metadata.json
+
