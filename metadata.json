@@ -1,0 +1,8 @@
+{
+  "name": "Remix Task Planner",
+  "description": "A modern task management and daily planner app with intuitive scheduling, progress analytics, category filtering, and calendar timeline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
