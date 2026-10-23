@@ -1,9 +1,7 @@
 const { chromium } = require('C:/Users/ch/Desktop/lesprojetes/portfolio/portfolio-next/node_modules/playwright');
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process');
 
-const FFMPEG_PATH = 'C:/Users/ch/AppData/Local/ms-playwright/ffmpeg-1013/ffmpeg-win64.exe';
 const EDGE_PATH = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const BASE_URL = 'http://localhost:4000';
 const OUT_DIR = path.resolve(__dirname, '../appscreenshot');
@@ -30,7 +28,7 @@ async function run() {
 
   await page.goto(BASE_URL);
   // Wait for splash screen (1.4s) + flutter warmup
-  await page.waitForTimeout(4000);
+  await page.waitForTimeout(5000);
 
   // 1. Home Dashboard - Default Morning Mode
   await page.screenshot({ path: path.join(OUT_DIR, '01_home_morning_dashboard.png') });
@@ -60,9 +58,19 @@ async function run() {
 
   // Click Tab 2: AI Assistant Chatbot (x=125, y=844)
   await page.mouse.click(125, 844);
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1400);
   await page.screenshot({ path: path.join(OUT_DIR, '05_ai_assistant_chatbot.png') });
-  console.log('✓ Captured 05_ai_assistant_chatbot.png');
+  console.log('✓ Captured 05_ai_assistant_chatbot.png (Screen 1 - Hero Creature)');
+
+  // Click creature / chat button to open Screen 2 (Create Mode)
+  await page.mouse.click(206, 430);
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: path.join(OUT_DIR, '05_ai_assistant_create_screen.png') });
+  console.log('✓ Captured 05_ai_assistant_create_screen.png (Screen 2 - Create & Audio)');
+
+  // Click back button to return to Screen 1
+  await page.mouse.click(38, 70);
+  await page.waitForTimeout(800);
 
   // Click Tab 3: Profile & Analytics (x=165, y=844)
   await page.mouse.click(165, 844);
@@ -107,7 +115,7 @@ async function run() {
     deviceScaleFactor: 2
   });
   await desktopPage.goto(BASE_URL);
-  await desktopPage.waitForTimeout(4000);
+  await desktopPage.waitForTimeout(5000);
   await desktopPage.screenshot({ path: path.join(OUT_DIR, '10_desktop_device_mockup_showcase.png') });
   console.log('✓ Captured 10_desktop_device_mockup_showcase.png');
   await desktopPage.close();
@@ -116,6 +124,11 @@ async function run() {
   // PHASE 3: RECORD SHOWCASE VIDEO (Mobile Viewport)
   // ==========================================
   console.log('--- Phase 3: Recording Mobile Showcase Video ---');
+  // Clear any existing recordings in VIDEO_DIR
+  fs.readdirSync(VIDEO_DIR).forEach(f => {
+    try { fs.unlinkSync(path.join(VIDEO_DIR, f)); } catch (_) {}
+  });
+
   const recordContext = await browser.newContext({
     recordVideo: {
       dir: VIDEO_DIR,
@@ -126,29 +139,28 @@ async function run() {
 
   const recPage = await recordContext.newPage();
   await recPage.goto(BASE_URL);
-  // Intro splash animation
-  await recPage.waitForTimeout(3000);
+  await recPage.waitForTimeout(4000);
 
   // Pause on Morning Home Dashboard
   await recPage.waitForTimeout(1800);
 
   // Switch to Afternoon Sunset Mode
   await recPage.mouse.click(250, 125);
-  await recPage.waitForTimeout(2200);
+  await recPage.waitForTimeout(2000);
 
   // Switch to Night Dark Sky Mode
   await recPage.mouse.click(345, 125);
-  await recPage.waitForTimeout(2500);
+  await recPage.waitForTimeout(2200);
 
   // Switch back to Auto / Morning
   await recPage.mouse.click(155, 125);
-  await recPage.waitForTimeout(1800);
+  await recPage.waitForTimeout(1600);
 
   // Scroll down tasks smoothly
-  await recPage.mouse.wheel(0, 300);
-  await recPage.waitForTimeout(1500);
-  await recPage.mouse.wheel(0, -300);
+  await recPage.mouse.wheel(0, 280);
   await recPage.waitForTimeout(1200);
+  await recPage.mouse.wheel(0, -280);
+  await recPage.waitForTimeout(1000);
 
   // Click Random Task
   await recPage.mouse.click(60, 425);
@@ -159,27 +171,35 @@ async function run() {
 
   // Click Tab 1: Schedule Timeline
   await recPage.mouse.click(85, 844);
-  await recPage.waitForTimeout(2200);
-  await recPage.mouse.wheel(0, 250);
-  await recPage.waitForTimeout(1500);
-  await recPage.mouse.wheel(0, -250);
-  await recPage.waitForTimeout(1000);
+  await recPage.waitForTimeout(2000);
 
-  // Click Tab 2: AI Chatbot Assistant
+  // Click Tab 2: AI Chatbot Assistant (Screen 1 - Creature & Stats)
   await recPage.mouse.click(125, 844);
   await recPage.waitForTimeout(2500);
 
-  // Click Tab 3: Profile
+  // Click Creature / Chat Button to open Screen 2 (Create Mode)
+  await recPage.mouse.click(206, 430);
+  await recPage.waitForTimeout(2200);
+
+  // Click "+ Surprise me" to generate a prompt
+  await recPage.mouse.click(85, 590);
+  await recPage.waitForTimeout(2200);
+
+  // Click back button to return to Screen 1
+  await recPage.mouse.click(38, 70);
+  await recPage.waitForTimeout(1500);
+
+  // Click Tab 3: Profile & Analytics
   await recPage.mouse.click(165, 844);
-  await recPage.waitForTimeout(2500);
+  await recPage.waitForTimeout(2200);
 
   // Click Tab 0: Home
   await recPage.mouse.click(45, 844);
-  await recPage.waitForTimeout(1500);
+  await recPage.waitForTimeout(1400);
 
   // Click (+) New Task Dialog
   await recPage.mouse.click(345, 844);
-  await recPage.waitForTimeout(2500);
+  await recPage.waitForTimeout(2200);
 
   // Close context to finalize video writing
   await recordContext.close();
@@ -191,20 +211,15 @@ async function run() {
   const videoFiles = fs.readdirSync(VIDEO_DIR).filter(f => f.endsWith('.webm'));
   if (videoFiles.length > 0) {
     const rawVideo = path.join(VIDEO_DIR, videoFiles[0]);
-    const finalMp4 = path.resolve(__dirname, '../atask_showcase.mp4');
-    const portfolioVideo = 'C:/Users/ch/Desktop/lesprojetes/portfolio/portfolio-next/public/videos/mobileapp.mp4';
+    const finalWebm = path.resolve(__dirname, '../atask_showcase.webm');
+    const portfolioVideo = 'C:/Users/ch/Desktop/lesprojetes/portfolio/portfolio-next/public/videos/atask_showcase.webm';
 
-    console.log(`Converting ${rawVideo} to MP4 using ffmpeg...`);
-    try {
-      execSync(`"${FFMPEG_PATH}" -y -i "${rawVideo}" -c:v libx264 -pix_fmt yuv420p -r 60 "${finalMp4}"`, { stdio: 'inherit' });
-      console.log(`✓ MP4 generated at: ${finalMp4}`);
+    // Copy to workspace and portfolio
+    fs.copyFileSync(rawVideo, finalWebm);
+    console.log(`✓ Copied showcase video to: ${finalWebm}`);
 
-      // Copy to portfolio-next public/videos/mobileapp.mp4
-      fs.copyFileSync(finalMp4, portfolioVideo);
-      console.log(`✓ Replaced portfolio video at: ${portfolioVideo}`);
-    } catch (e) {
-      console.error('Error during ffmpeg conversion:', e.message);
-    }
+    fs.copyFileSync(rawVideo, portfolioVideo);
+    console.log(`✓ Synced to portfolio video at: ${portfolioVideo}`);
   }
 
   console.log('=== ALL SCREENSHOTS AND VIDEO COMPLETE! ===');
