@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../state/task_provider.dart';
+import '../models/task_model.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final TaskProvider provider;
@@ -13,23 +14,27 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   bool _isChatOpen = false;
-  int _activeSegmentIndex = 0; // 0: Create, 1: Templates
+  int _activeSegmentIndex = 0; // 0: Create, 1: Manage (CRUD)
   final TextEditingController _promptController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isRecordingAudio = false;
   int _surpriseIndex = 0;
+  TaskModel? _lastCreatedTask;
+  String? _lastActionFeedback;
 
   final List<String> _surprisePrompts = [
     'Design an interactive 3D particle hero animation for portfolio',
     'Build an automated task reminder routine for 9 AM sprint',
     'Create a minimalist dark mode dashboard with live telemetry',
     'Schedule daily deep work focus blocks with 10m refresh breaks',
-    'Generate weekly productivity audit and milestone retrospective',
-    'Optimize Flutter Web rendering pipelines & canvas cache',
+    'Audit database queries and optimize response latency',
+    'Prepare sprint review presentation and retrospective checklist',
   ];
 
   @override
   void dispose() {
     _promptController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -45,16 +50,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _isRecordingAudio = !_isRecordingAudio;
       if (_isRecordingAudio) {
         widget.provider.showToast(
-          'Listening... Speak your task prompt',
+          'Listening... Speak your task command (e.g. "Create task UI sprint")',
           icon: Icons.mic_rounded,
           color: const Color(0xFF3B82F6),
         );
       } else {
         if (_promptController.text.isEmpty) {
-          _promptController.text = 'Audio note: Schedule architecture review & sprint plan';
+          _promptController.text = 'Schedule architecture review & sprint plan';
         }
         widget.provider.showToast(
-          'Voice captured successfully',
+          'Voice captured: ready to create!',
           icon: Icons.check_circle_rounded,
           color: const Color(0xFF10B981),
         );
@@ -62,19 +67,152 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
-  void _submitPrompt() {
-    final text = _promptController.text.trim();
-    if (text.isEmpty) return;
+  // ==========================================================
+  // FULL CRUD ENGINE: Create, Read, Update, Delete for Tasks
+  // ==========================================================
+  void _handlePromptAction([String? customPrompt]) {
+    final raw = (customPrompt ?? _promptController.text).trim();
+    if (raw.isEmpty) return;
 
-    widget.provider.showToast(
-      'Task blueprint generated from prompt!',
-      icon: Icons.auto_awesome_rounded,
-      color: const Color(0xFF3B82F6),
+    final lower = raw.toLowerCase();
+
+    // 1. DELETE COMMAND: "delete <title/id>" or "remove <title/id>"
+    if (lower.startsWith('delete ') || lower.startsWith('remove ')) {
+      final query = raw.substring(raw.indexOf(' ') + 1).trim();
+      final match = _findTaskByQuery(query);
+      if (match != null) {
+        final title = match.title;
+        widget.provider.deleteTask(match.id);
+        setState(() {
+          _lastCreatedTask = null;
+          _lastActionFeedback = 'Deleted task: "$title"';
+          _isRecordingAudio = false;
+        });
+        widget.provider.showToast(
+          'Deleted "$title"',
+          icon: Icons.delete_outline_rounded,
+          color: const Color(0xFFEF4444),
+        );
+        _promptController.clear();
+        return;
+      }
+    }
+
+    // 2. COMPLETE / UPDATE STATUS COMMAND: "complete <title>" or "done <title>"
+    if (lower.startsWith('complete ') || lower.startsWith('done ') || lower.startsWith('finish ')) {
+      final query = raw.substring(raw.indexOf(' ') + 1).trim();
+      final match = _findTaskByQuery(query);
+      if (match != null) {
+        if (!match.isCompleted) {
+          widget.provider.toggleTaskComplete(match.id);
+        }
+        setState(() {
+          _lastActionFeedback = 'Marked completed: "${match.title}"';
+          _isRecordingAudio = false;
+        });
+        widget.provider.showToast(
+          'Completed "${match.title}"',
+          icon: Icons.check_circle_rounded,
+          color: const Color(0xFF10B981),
+        );
+        _promptController.clear();
+        return;
+      }
+    }
+
+    // 3. READ / LIST COMMAND: "list", "show tasks", "tasks"
+    if (lower == 'list' || lower == 'show tasks' || lower == 'tasks' || lower == 'view tasks') {
+      setState(() {
+        _activeSegmentIndex = 1; // switch to Manage Tasks list
+        _lastActionFeedback = 'Displaying all ${widget.provider.tasks.length} tasks';
+        _isRecordingAudio = false;
+      });
+      _promptController.clear();
+      return;
+    }
+
+    // 4. CREATE TASK COMMAND: "create <title>", "add <title>", or natural text
+    String taskTitle = raw;
+    if (lower.startsWith('create task:') || lower.startsWith('create task ') || lower.startsWith('create ')) {
+      taskTitle = raw.substring(raw.indexOf(' ') + 1).trim();
+      if (taskTitle.startsWith(':')) taskTitle = taskTitle.substring(1).trim();
+    } else if (lower.startsWith('add task:') || lower.startsWith('add task ') || lower.startsWith('add ')) {
+      taskTitle = raw.substring(raw.indexOf(' ') + 1).trim();
+      if (taskTitle.startsWith(':')) taskTitle = taskTitle.substring(1).trim();
+    }
+
+    // Determine priority from text
+    String priority = 'Medium';
+    if (lower.contains('urgent') || lower.contains('priority high') || lower.contains('high priority')) {
+      priority = 'High';
+      taskTitle = taskTitle.replaceAll(RegExp(r'(priority high|urgent|high priority)', caseSensitive: false), '').trim();
+    } else if (lower.contains('priority low') || lower.contains('low priority')) {
+      priority = 'Low';
+      taskTitle = taskTitle.replaceAll(RegExp(r'(priority low|low priority)', caseSensitive: false), '').trim();
+    }
+
+    if (taskTitle.isEmpty) taskTitle = 'AI Productivity Sprint';
+
+    widget.provider.createTask(
+      title: taskTitle,
+      priority: priority,
+      project: 'AI Assistant',
+      date: 'Today',
+      startTime: '10:00 AM',
+      endTime: '11:00 AM',
+      colorTheme: priority == 'High' ? 'purple' : 'blue',
     );
-    _promptController.clear();
+
+    final created = widget.provider.tasks.first;
     setState(() {
+      _lastCreatedTask = created;
+      _lastActionFeedback = 'Created: "${created.title}" ($priority Priority)';
       _isRecordingAudio = false;
     });
+
+    widget.provider.showToast(
+      'Task created in schedule!',
+      icon: Icons.check_circle_rounded,
+      color: const Color(0xFF10B981),
+    );
+    _promptController.clear();
+  }
+
+  TaskModel? _findTaskByQuery(String query) {
+    final lower = query.toLowerCase();
+    for (final task in widget.provider.tasks) {
+      if (task.title.toLowerCase().contains(lower) || task.id.toString() == query) {
+        return task;
+      }
+    }
+    return null;
+  }
+
+  void _cycleTaskPriority(TaskModel task) {
+    String nextPriority;
+    switch (task.priority) {
+      case 'High':
+        nextPriority = 'Low';
+        break;
+      case 'Low':
+        nextPriority = 'Medium';
+        break;
+      default:
+        nextPriority = 'High';
+        break;
+    }
+    final updated = task.copyWith(priority: nextPriority);
+    widget.provider.updateTask(updated);
+    if (_lastCreatedTask?.id == task.id) {
+      setState(() {
+        _lastCreatedTask = updated;
+      });
+    }
+    widget.provider.showToast(
+      'Priority set to $nextPriority',
+      icon: Icons.flag_rounded,
+      color: const Color(0xFF3B82F6),
+    );
   }
 
   void _openChatView() {
@@ -109,7 +247,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
 
-          // Main View Switcher: Left Screen (Showcase) vs Right Screen (Creation / Chat)
+          // Main View Switcher: Left Screen (Showcase) vs Right Screen (Create & CRUD Manager)
           SafeArea(
             bottom: false,
             child: Padding(
@@ -147,6 +285,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   // LEFT SCREEN: Inspiration Card & Creature
   // ==========================================
   Widget _buildLeftScreen({Key? key}) {
+    final totalTasks = widget.provider.tasks.length;
+    final doneTasks = widget.provider.tasks.where((t) => t.isCompleted).length;
+
     return LayoutBuilder(
       key: key,
       builder: (context, constraints) {
@@ -201,7 +342,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
                       const SizedBox(width: 10),
 
-                      // Search Button
+                      // Search / Quick Create Button
                       _buildCircularHeaderButton(
                         icon: Icons.search_rounded,
                         onTap: () => _openChatView(),
@@ -227,7 +368,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           ),
                         ),
 
-                        // Main Blue Card Container (Exact gradient matching monster image)
+                        // Main Blue Card Container
                         Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           width: double.infinity,
@@ -311,12 +452,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                     // Top Right Actions
                                     _buildFrostedCardIcon(
                                       icon: Icons.remove_red_eye_outlined,
-                                      onTap: () {},
+                                      onTap: () {
+                                        setState(() {
+                                          _activeSegmentIndex = 1;
+                                          _isChatOpen = true;
+                                        });
+                                      },
                                     ),
                                     const SizedBox(width: 8),
                                     _buildFrostedCardIcon(
                                       icon: Icons.more_vert_rounded,
-                                      onTap: () {},
+                                      onTap: () => _openChatView(),
                                     ),
                                   ],
                                 ),
@@ -357,18 +503,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
                                       _buildCardStatItem(
-                                        icon: Icons.sports_esports_rounded,
-                                        label: '31K',
+                                        icon: Icons.task_alt_rounded,
+                                        label: '$totalTasks Tasks',
                                       ),
                                       _buildCardStatItem(
-                                        icon: Icons.reply_rounded,
-                                        label: '143',
+                                        icon: Icons.check_circle_outline_rounded,
+                                        label: '$doneTasks Done',
                                       ),
                                       _buildCardStatItem(
                                         icon: Icons.favorite_rounded,
                                         label: '585',
                                       ),
-                                      // Chat Button: clicking opens the right creation/chat screen!
+                                      // Chat Button: clicking opens the right creation/CRUD screen!
                                       GestureDetector(
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () => _openChatView(),
@@ -419,7 +565,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   // ==========================================
-  // RIGHT SCREEN: Create Your Game / Task UI
+  // RIGHT SCREEN: Create & CRUD Manager UI
   // ==========================================
   Widget _buildRightScreen({Key? key}) {
     return LayoutBuilder(
@@ -492,7 +638,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Pill Tab Switcher: "Rocket Create" vs "Box Templates"
+                  // Pill Tab Switcher: "Rocket Create" vs "Box Templates / Manage"
                   Container(
                     height: 42,
                     padding: const EdgeInsets.all(3),
@@ -565,7 +711,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           ),
                         ),
 
-                        // Right Pill: Templates
+                        // Right Pill: Templates / Manage Tasks (READ, UPDATE, DELETE)
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
@@ -626,7 +772,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
                   const SizedBox(height: 14),
 
-                  // Main White Input Card
+                  // Main White Content Card
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -641,186 +787,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Text Input Area
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                            child: TextField(
-                              controller: _promptController,
-                              maxLines: 4,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF1E293B),
-                                height: 1.4,
-                              ),
-                              decoration: const InputDecoration(
-                                hintText: 'Describe what game you want to build...',
-                                hintStyle: TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF94A3B8),
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              onSubmitted: (_) => _submitPrompt(),
-                            ),
-                          ),
-
-                          // Center Magic Sparkle with radial aura
-                          Expanded(
-                            child: Center(
-                              child: _isRecordingAudio
-                                  ? _buildAudioWaveformIndicator()
-                                  : Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        // Subtle radiant glow
-                                        Container(
-                                          width: 90,
-                                          height: 90,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: RadialGradient(
-                                              colors: [
-                                                const Color(0xFF60A5FA).withOpacity(0.35),
-                                                const Color(0xFF93C5FD).withOpacity(0.08),
-                                                Colors.transparent,
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        // 4-point magic sparkle icon
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(
-                                              Icons.auto_awesome,
-                                              size: 32,
-                                              color: Color(0xFF60A5FA),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                            ),
-                          ),
-
-                          // Card Bottom Bar: "+ Surprise me" and Send/Mic Button
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                            child: Row(
-                              children: [
-                                // Surprise Me Pill Button
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: _cycleSurprisePrompt,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.04),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Icon(
-                                          Icons.auto_awesome,
-                                          size: 14,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          'Surprise me',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFF0F172A),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                const Spacer(),
-
-                                // Audio Microphone Button
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: _toggleAudioRecording,
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      color: _isRecordingAudio
-                                          ? const Color(0xFFEF4444)
-                                          : const Color(0xFFF1F5F9),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: _isRecordingAudio
-                                            ? const Color(0xFFDC2626)
-                                            : const Color(0xFFE2E8F0),
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Icon(
-                                        _isRecordingAudio ? Icons.mic_off_rounded : Icons.mic_rounded,
-                                        size: 18,
-                                        color: _isRecordingAudio
-                                            ? Colors.white
-                                            : const Color(0xFF475569),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Circular Blue Send Button
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: _submitPrompt,
-                                  child: Container(
-                                    width: 42,
-                                    height: 42,
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                                      ),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF1D4ED8).withOpacity(0.4),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.near_me_rounded,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: _activeSegmentIndex == 0
+                          ? _buildCreateTaskCardContent()
+                          : _buildManageTasksCRUDContent(),
                     ),
                   ),
 
@@ -834,10 +803,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           icon: Icons.photo_library_outlined,
                           label: 'Photos',
                           onTap: () {
-                            widget.provider.showToast(
-                              'Photo attachment selected',
-                              icon: Icons.photo_rounded,
-                            );
+                            _handlePromptAction('Create task: Photo assets sprint high priority');
                           },
                         ),
                       ),
@@ -847,10 +813,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           icon: Icons.videocam_outlined,
                           label: 'Videos',
                           onTap: () {
-                            widget.provider.showToast(
-                              'Video note selected',
-                              icon: Icons.videocam_rounded,
-                            );
+                            _toggleAudioRecording();
                           },
                         ),
                       ),
@@ -860,9 +823,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           icon: Icons.graphic_eq_rounded,
                           label: 'Sounds',
                           onTap: () {
+                            setState(() {
+                              _activeSegmentIndex = 1; // View all tasks
+                            });
                             widget.provider.showToast(
-                              'Ambient sound loaded',
-                              icon: Icons.graphic_eq_rounded,
+                              'Viewing all ${widget.provider.tasks.length} tasks',
+                              icon: Icons.list_alt_rounded,
                             );
                           },
                         ),
@@ -873,10 +839,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           icon: Icons.sentiment_satisfied_alt_rounded,
                           label: 'Meme',
                           onTap: () {
-                            widget.provider.showToast(
-                              'Task inspiration meme active!',
-                              icon: Icons.sentiment_satisfied_alt_rounded,
-                            );
+                            _cycleSurprisePrompt();
                           },
                         ),
                       ),
@@ -888,6 +851,595 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ),
         );
       },
+    );
+  }
+
+  // ==========================================
+  // TAB 0: CREATE TASK CONTENT
+  // ==========================================
+  Widget _buildCreateTaskCardContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Text Input Area
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: TextField(
+            controller: _promptController,
+            maxLines: 4,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF1E293B),
+              height: 1.4,
+            ),
+            decoration: const InputDecoration(
+              hintText: 'Describe what game you want to build...',
+              hintStyle: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF94A3B8),
+                fontWeight: FontWeight.w400,
+              ),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            onSubmitted: (val) => _handlePromptAction(val),
+          ),
+        ),
+
+        // Center Area: Sparkle or newly created task feedback
+        Expanded(
+          child: Center(
+            child: _isRecordingAudio
+                ? _buildAudioWaveformIndicator()
+                : _lastCreatedTask != null
+                    ? _buildCreatedTaskPreviewCard(_lastCreatedTask!)
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Subtle radiant glow
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  const Color(0xFF60A5FA).withOpacity(0.35),
+                                  const Color(0xFF93C5FD).withOpacity(0.08),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          // 4-point magic sparkle icon
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.auto_awesome,
+                                size: 32,
+                                color: Color(0xFF60A5FA),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+          ),
+        ),
+
+        // Action feedback message
+        if (_lastActionFeedback != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Text(
+              _lastActionFeedback!,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF2563EB),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+
+        // Card Bottom Bar: "+ Surprise me" and Send/Mic Button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+          child: Row(
+            children: [
+              // Surprise Me Pill Button
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _cycleSurprisePrompt,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(
+                        Icons.auto_awesome,
+                        size: 14,
+                        color: Color(0xFF0F172A),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Surprise me',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Audio Microphone Button
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _toggleAudioRecording,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: _isRecordingAudio
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _isRecordingAudio
+                          ? const Color(0xFFDC2626)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _isRecordingAudio ? Icons.mic_off_rounded : Icons.mic_rounded,
+                      size: 18,
+                      color: _isRecordingAudio
+                          ? Colors.white
+                          : const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Circular Blue Send Button -> Creates Task!
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _handlePromptAction(),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1D4ED8).withOpacity(0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.near_me_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 1: MANAGE TASKS (READ, UPDATE, DELETE)
+  // ==========================================
+  Widget _buildManageTasksCRUDContent() {
+    final tasks = widget.provider.tasks;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header Row: Count & Quick Add button
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Task Manager (CRUD)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    '${tasks.where((t) => t.isCompleted).length}/${tasks.length} Completed',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // Quick Add Button
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _activeSegmentIndex = 0;
+                  });
+                  _promptController.text = 'New Sprint Task';
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.add_rounded, size: 14, color: Color(0xFF2563EB)),
+                      SizedBox(width: 4),
+                      Text(
+                        'New',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+          const SizedBox(height: 8),
+
+          // Scrollable List of Tasks
+          Expanded(
+            child: tasks.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.task_rounded, size: 36, color: Color(0xFFCBD5E1)),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'No tasks yet',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _activeSegmentIndex = 0;
+                            });
+                          },
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Create with AI'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: tasks.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return _buildCrudTaskTile(task);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Single Task Item with Interactive CRUD controls
+  Widget _buildCrudTaskTile(TaskModel task) {
+    Color priorityColor;
+    switch (task.priority) {
+      case 'High':
+        priorityColor = const Color(0xFFEF4444);
+        break;
+      case 'Low':
+        priorityColor = const Color(0xFF64748B);
+        break;
+      default:
+        priorityColor = const Color(0xFFF59E0B);
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: task.isCompleted ? const Color(0xFFF8FAFC) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: task.isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: task.isCompleted
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+      ),
+      child: Row(
+        children: [
+          // UPDATE: Complete Checkbox
+          GestureDetector(
+            onTap: () {
+              widget.provider.toggleTaskComplete(task.id);
+            },
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: task.isCompleted ? const Color(0xFF10B981) : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: task.isCompleted ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
+                  width: 1.5,
+                ),
+              ),
+              child: task.isCompleted
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          // Title & Time (READ)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: task.isCompleted ? const Color(0xFF94A3B8) : const Color(0xFF0F172A),
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${task.startTime} • ${task.project}',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 6),
+
+          // UPDATE: Priority Badge (Tap to cycle priority!)
+          GestureDetector(
+            onTap: () => _cycleTaskPriority(task),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: priorityColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                task.priority,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: priorityColor,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 6),
+
+          // UPDATE: Star Toggle
+          GestureDetector(
+            onTap: () {
+              widget.provider.toggleTaskStarred(task.id);
+            },
+            child: Icon(
+              task.isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: 18,
+              color: task.isStarred ? const Color(0xFFF59E0B) : const Color(0xFFCBD5E1),
+            ),
+          ),
+
+          const SizedBox(width: 6),
+
+          // DELETE: Trash Button
+          GestureDetector(
+            onTap: () {
+              final title = task.title;
+              widget.provider.deleteTask(task.id);
+              widget.provider.showToast(
+                'Deleted "$title"',
+                icon: Icons.delete_outline_rounded,
+                color: const Color(0xFFEF4444),
+              );
+            },
+            child: const Icon(
+              Icons.delete_outline_rounded,
+              size: 18,
+              color: Color(0xFFEF4444),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Newly Created Task Preview Card inside Tab 0
+  Widget _buildCreatedTaskPreviewCard(TaskModel task) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF22C55E),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, size: 12, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Task Created Successfully!',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF15803D),
+                ),
+              ),
+              const Spacer(),
+              // Delete shortcut
+              GestureDetector(
+                onTap: () {
+                  widget.provider.deleteTask(task.id);
+                  setState(() {
+                    _lastCreatedTask = null;
+                  });
+                  widget.provider.showToast('Task removed', icon: Icons.delete_outline);
+                },
+                child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF94A3B8)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  task.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _cycleTaskPriority(task),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                  ),
+                  child: Text(
+                    task.priority,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _activeSegmentIndex = 1;
+                  });
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Manage All Tasks →',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -905,7 +1457,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           const Icon(Icons.mic_rounded, color: Color(0xFF2563EB), size: 20),
           const SizedBox(width: 10),
           const Text(
-            'Listening... Speak your task',
+            'Listening... Speak task name',
             style: TextStyle(
               color: Color(0xFF1D4ED8),
               fontSize: 13,

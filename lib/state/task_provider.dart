@@ -64,6 +64,7 @@ class TaskProvider extends ChangeNotifier {
 
   // Getters
   List<TaskModel> get allTasks => _tasks;
+  List<TaskModel> get tasks => _tasks;
   String get timeFilterScope => _timeFilterScope;
   String get statusFilter => _statusFilter;
   int get selectedTab => _selectedTab;
