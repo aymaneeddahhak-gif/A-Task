@@ -526,7 +526,7 @@ class _MainTabContainerState extends State<MainTabContainer> {
   }
 }
 
-class AppSplashScreen extends StatelessWidget {
+class AppSplashScreen extends StatefulWidget {
   final bool isNight;
   final Color? backgroundColor;
 
@@ -537,13 +537,144 @@ class AppSplashScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<AppSplashScreen> createState() => _AppSplashScreenState();
+}
+
+class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isNight;
+    final bgColor = widget.backgroundColor ??
+        (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC));
+
     return Scaffold(
-      backgroundColor: backgroundColor ??
-          (isNight ? const Color(0xFF0F172A) : const Color(0xFFF2F7FC)),
-      body: HomeScreenSkeleton(
-        isNight: isNight,
-        backgroundColor: backgroundColor,
+      backgroundColor: bgColor,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 3D App Icon with smooth entrance & depth shadow
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  width: 104,
+                  height: 104,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withOpacity(0.22),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/images/icon3D.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Center(
+                        child: Icon(Icons.task_alt_rounded, size: 52, color: Color(0xFF2563EB)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              // App Title: A-Task
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'A-',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const Text(
+                    'Task',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 6),
+
+              // Tagline
+              Text(
+                'Personal Planner & Routines',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Sleek Loading Progress Indicator
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isDark ? const Color(0xFF38BDF8) : const Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

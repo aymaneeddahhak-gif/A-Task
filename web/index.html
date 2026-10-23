@@ -37,153 +37,88 @@
       transition: opacity 0.4s ease;
     }
 
-    /* Facebook-style Content Skeleton Loader with Uiverse.io shimmer sweeping gradient */
-    .shimmer {
-      background: linear-gradient(120deg, #e5e5e5 30%, #f0f0f0 38%, #f0f0f0 40%, #e5e5e5 48%);
-      background-size: 200% 100%;
-      background-position: 100% 0;
-      animation: load89234 2s infinite;
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: splashFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes load89234 {
+    @keyframes splashFadeIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+      }
       100% {
-        background-position: -100% 0;
+        opacity: 1;
+        transform: scale(1);
       }
     }
 
-    .phone-skeleton {
-      width: 390px;
-      max-width: 90vw;
-      height: 740px;
-      max-height: 90vh;
-      background: #F2F7FC;
-      border-radius: 42px;
-      border: 4px solid #151722;
-      box-shadow: 8px 8px 0 #D1DADA, 0 20px 40px rgba(0,0,0,0.12);
-      padding: 24px 20px;
-      box-sizing: border-box;
+    .app-icon-box {
+      width: 104px;
+      height: 104px;
+      background: #FFFFFF;
+      border-radius: 28px;
       display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 40px rgba(37, 99, 235, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      margin-bottom: 22px;
     }
 
-    .notch {
-      width: 110px;
+    .app-icon-box img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .app-brand-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin: 0;
+      color: #0F172A;
+    }
+
+    .app-brand-title span {
+      color: #2563EB;
+    }
+
+    .app-brand-tagline {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      margin-top: 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .splash-spinner {
+      margin-top: 32px;
+      width: 24px;
       height: 24px;
-      background: #0C0E14;
-      border-radius: 14px;
-      margin: -10px auto 16px auto;
-    }
-
-    .row-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .circle-avatar {
-      width: 46px;
-      height: 46px;
+      border: 2.5px solid #E2E8F0;
+      border-top-color: #2563EB;
       border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
-    .bar {
-      border-radius: 6px;
-    }
-
-    .card-wireframe {
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-      margin-top: 14px;
-    }
-
-    .task-wireframe {
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 14px 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div id="splash-loading">
-    <div class="phone-skeleton">
-      <div class="notch"></div>
-      
-      <!-- 1. Header Bar: Avatar + Greeting + 2 Icon Buttons -->
-      <div class="row-between">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="circle-avatar shimmer"></div>
-          <div>
-            <div class="bar shimmer" style="width: 80px; height: 12px; margin-bottom: 6px;"></div>
-            <div class="bar shimmer" style="width: 110px; height: 18px;"></div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <div class="shimmer" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-          <div class="shimmer" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-        </div>
+    <div class="splash-content">
+      <div class="app-icon-box">
+        <img src="icon3D.png" alt="A-Task Logo">
       </div>
-
-      <!-- 2. Headline Skeleton -->
-      <div class="row-between" style="margin-top: 18px; align-items: flex-end;">
-        <div>
-          <div class="bar shimmer" style="width: 130px; height: 20px; margin-bottom: 6px;"></div>
-          <div class="bar shimmer" style="width: 170px; height: 20px;"></div>
-        </div>
-        <div class="bar shimmer" style="width: 100px; height: 32px; border-radius: 12px;"></div>
-      </div>
-
-      <!-- 3. Today Progress Card Skeleton -->
-      <div class="card-wireframe">
-        <div class="row-between">
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="bar shimmer" style="width: 80px; height: 18px; border-radius: 10px;"></div>
-            <div class="bar shimmer" style="width: 120px; height: 16px;"></div>
-            <div class="bar shimmer" style="width: 90px; height: 10px;"></div>
-            <div class="bar shimmer" style="width: 85px; height: 10px;"></div>
-          </div>
-          <div class="shimmer" style="width: 80px; height: 80px; border-radius: 50%;"></div>
-        </div>
-      </div>
-
-      <!-- 4. Section Header & Pills -->
-      <div class="row-between" style="margin-top: 18px;">
-        <div class="bar shimmer" style="width: 120px; height: 18px;"></div>
-        <div class="bar shimmer" style="width: 38px; height: 38px; border-radius: 10px;"></div>
-      </div>
-
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <div class="bar shimmer" style="width: 50px; height: 36px; border-radius: 18px;"></div>
-        <div class="bar shimmer" style="width: 66px; height: 36px; border-radius: 18px;"></div>
-        <div class="bar shimmer" style="width: 90px; height: 36px; border-radius: 18px;"></div>
-        <div class="bar shimmer" style="width: 80px; height: 36px; border-radius: 18px;"></div>
-      </div>
-
-      <!-- 5. Task List Wireframes -->
-      <div class="task-wireframe">
-        <div class="shimmer" style="width: 4px; height: 42px; border-radius: 2px; margin-right: 12px;"></div>
-        <div style="flex: 1;">
-          <div class="bar shimmer" style="width: 150px; height: 14px; margin-bottom: 6px;"></div>
-          <div class="bar shimmer" style="width: 100px; height: 10px;"></div>
-        </div>
-        <div class="shimmer" style="width: 24px; height: 24px; border-radius: 50%;"></div>
-      </div>
-
-      <div class="task-wireframe">
-        <div class="shimmer" style="width: 4px; height: 42px; border-radius: 2px; margin-right: 12px;"></div>
-        <div style="flex: 1;">
-          <div class="bar shimmer" style="width: 165px; height: 14px; margin-bottom: 6px;"></div>
-          <div class="bar shimmer" style="width: 110px; height: 10px;"></div>
-        </div>
-        <div class="shimmer" style="width: 24px; height: 24px; border-radius: 50%;"></div>
-      </div>
+      <h1 class="app-brand-title">A-<span>Task</span></h1>
+      <p class="app-brand-tagline">Personal Planner &amp; Routines</p>
+      <div class="splash-spinner"></div>
     </div>
   </div>
   <script>
