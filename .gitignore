@@ -45,3 +45,6 @@ remix-task-planner.zip
 .aistudio/
 metadata.json
 
+# Temporary video outputs
+videos/
+
