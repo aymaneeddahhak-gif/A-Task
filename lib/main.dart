@@ -11,7 +11,6 @@ import 'screens/add_task_dialog.dart';
 import 'screens/task_detail_dialog.dart';
 import 'screens/random_task_dialog.dart';
 import 'screens/design_sandbox_screen.dart';
-import 'widgets/content_skeleton_loader.dart';
 
 void main() {
   runApp(const TaskPlannerFlutterApp());

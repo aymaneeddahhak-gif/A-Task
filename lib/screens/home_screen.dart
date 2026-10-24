@@ -5,13 +5,21 @@ import '../widgets/circular_progress_ring.dart';
 import '../widgets/task_card.dart';
 import '../widgets/content_skeleton_loader.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final TaskProvider provider;
 
   const HomeScreen({Key? key, required this.provider}) : super(key: key);
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isModeExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final provider = widget.provider;
     // 0. Check if Facebook-style content skeleton is currently loading
     if (provider.isLoadingContent) {
       return HomeScreenSkeleton(
@@ -651,77 +659,170 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildAtmosphereModeSelector(TaskProvider provider, bool isNight) {
     final currentMode = provider.atmosphereMode;
+    final String currentTitle;
+    final IconData currentIcon;
+    final Color currentIconColor;
 
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isNight
-            ? const Color(0xFF1E293B).withOpacity(0.95)
-            : Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-          width: 1,
+    switch (currentMode) {
+      case 'morning':
+        currentTitle = 'Morning';
+        currentIcon = Icons.wb_sunny_rounded;
+        currentIconColor = const Color(0xFF38BDF8);
+        break;
+      case 'afternoon':
+        currentTitle = 'Afternoon';
+        currentIcon = Icons.wb_twilight_rounded;
+        currentIconColor = const Color(0xFFF97316);
+        break;
+      case 'night':
+        currentTitle = 'Night';
+        currentIcon = Icons.nightlight_round;
+        currentIconColor = const Color(0xFFFDE047);
+        break;
+      default:
+        currentTitle = 'Auto';
+        currentIcon = Icons.brightness_auto_rounded;
+        currentIconColor = const Color(0xFF38BDF8);
+        break;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Single Compact Place (Click to reveal all available modes)
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            setState(() {
+              _isModeExpanded = !_isModeExpanded;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isNight
+                  ? const Color(0xFF1E293B).withOpacity(0.95)
+                  : Colors.white.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(currentIcon, size: 16, color: currentIconColor),
+                const SizedBox(width: 8),
+                Text(
+                  currentTitle,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: isNight ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  _isModeExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+              ],
+            ),
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildModeItem(
-              provider: provider,
-              modeKey: 'auto',
-              icon: Icons.brightness_auto_rounded,
-              title: 'Auto',
-              isSelected: currentMode == 'auto',
-              isNight: isNight,
-              activeIconColor: const Color(0xFF38BDF8),
+
+        // When clicked: expands and shows all available modes in that place!
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: Container(
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isNight
+                  ? const Color(0xFF1E293B).withOpacity(0.95)
+                  : Colors.white.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildModeItem(
+                    provider: provider,
+                    modeKey: 'auto',
+                    icon: Icons.brightness_auto_rounded,
+                    title: 'Auto',
+                    isSelected: currentMode == 'auto',
+                    isNight: isNight,
+                    activeIconColor: const Color(0xFF38BDF8),
+                    onSelect: () => setState(() => _isModeExpanded = false),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _buildModeItem(
+                    provider: provider,
+                    modeKey: 'morning',
+                    icon: Icons.wb_sunny_rounded,
+                    title: 'Morning',
+                    isSelected: currentMode == 'morning',
+                    isNight: isNight,
+                    activeIconColor: const Color(0xFF38BDF8),
+                    onSelect: () => setState(() => _isModeExpanded = false),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _buildModeItem(
+                    provider: provider,
+                    modeKey: 'afternoon',
+                    icon: Icons.wb_twilight_rounded,
+                    title: 'Afternoon',
+                    isSelected: currentMode == 'afternoon',
+                    isNight: isNight,
+                    activeIconColor: const Color(0xFFF97316),
+                    onSelect: () => setState(() => _isModeExpanded = false),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _buildModeItem(
+                    provider: provider,
+                    modeKey: 'night',
+                    icon: Icons.nightlight_round,
+                    title: 'Night',
+                    isSelected: currentMode == 'night',
+                    isNight: isNight,
+                    activeIconColor: const Color(0xFFFDE047),
+                    onSelect: () => setState(() => _isModeExpanded = false),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildModeItem(
-              provider: provider,
-              modeKey: 'morning',
-              icon: Icons.wb_sunny_rounded,
-              title: 'Morning',
-              isSelected: currentMode == 'morning',
-              isNight: isNight,
-              activeIconColor: const Color(0xFF38BDF8),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildModeItem(
-              provider: provider,
-              modeKey: 'afternoon',
-              icon: Icons.wb_twilight_rounded,
-              title: 'Afternoon',
-              isSelected: currentMode == 'afternoon',
-              isNight: isNight,
-              activeIconColor: const Color(0xFFF97316),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildModeItem(
-              provider: provider,
-              modeKey: 'night',
-              icon: Icons.nightlight_round,
-              title: 'Night',
-              isSelected: currentMode == 'night',
-              isNight: isNight,
-              activeIconColor: const Color(0xFFFDE047),
-            ),
-          ),
-        ],
-      ),
+          crossFadeState: _isModeExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 250),
+        ),
+      ],
     );
   }
 
@@ -733,9 +834,13 @@ class HomeScreen extends StatelessWidget {
     required bool isSelected,
     required bool isNight,
     required Color activeIconColor,
+    VoidCallback? onSelect,
   }) {
     return GestureDetector(
-      onTap: () => provider.setAtmosphereMode(modeKey),
+      onTap: () {
+        provider.setAtmosphereMode(modeKey);
+        if (onSelect != null) onSelect();
+      },
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
@@ -913,6 +1018,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildStatusPill(String filterName, int count) {
+    final provider = widget.provider;
     final isSelected = provider.statusFilter == filterName;
 
     return GestureDetector(

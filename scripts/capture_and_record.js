@@ -27,8 +27,13 @@ async function run() {
   });
 
   await page.goto(BASE_URL);
-  // Wait for splash screen (1.4s) + flutter warmup
-  await page.waitForTimeout(5000);
+  // Wait for splash screen (1.4s) + flutter canvaskit warmup
+  await page.waitForTimeout(6000);
+  await page.evaluate(() => {
+    const s = document.getElementById('splash-loading');
+    if (s) s.remove();
+  });
+  await page.waitForTimeout(2500);
 
   // 1. Home Dashboard - Default Morning Mode
   await page.screenshot({ path: path.join(OUT_DIR, '01_home_morning_dashboard.png') });
@@ -80,9 +85,31 @@ async function run() {
 
   // Click Tab 4: Design Sandbox (x=205, y=844)
   await page.mouse.click(205, 844);
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1400);
   await page.screenshot({ path: path.join(OUT_DIR, '07_design_sandbox.png') });
   console.log('✓ Captured 07_design_sandbox.png');
+
+  // Click Paper Card dedicated tab (x=180, y=98)
+  await page.mouse.click(180, 98);
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(OUT_DIR, '11_sandbox_paper_card.png') });
+  console.log('✓ Captured 11_sandbox_paper_card.png');
+
+  // Click Analytics dedicated tab (x=280, y=98)
+  await page.mouse.click(280, 98);
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(OUT_DIR, '12_sandbox_analytics_graph.png') });
+  console.log('✓ Captured 12_sandbox_analytics_graph.png');
+
+  // Click Pro Plan dedicated tab (x=365, y=98)
+  await page.mouse.click(365, 98);
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(OUT_DIR, '13_sandbox_pro_plan.png') });
+  console.log('✓ Captured 13_sandbox_pro_plan.png');
+
+  // Click Showcase tab back (x=60, y=98)
+  await page.mouse.click(60, 98);
+  await page.waitForTimeout(800);
 
   // Click Tab 0: Back to Home (x=45, y=844)
   await page.mouse.click(45, 844);
@@ -115,7 +142,12 @@ async function run() {
     deviceScaleFactor: 2
   });
   await desktopPage.goto(BASE_URL);
-  await desktopPage.waitForTimeout(5000);
+  await desktopPage.waitForTimeout(6000);
+  await desktopPage.evaluate(() => {
+    const s = document.getElementById('splash-loading');
+    if (s) s.remove();
+  });
+  await desktopPage.waitForTimeout(2500);
   await desktopPage.screenshot({ path: path.join(OUT_DIR, '10_desktop_device_mockup_showcase.png') });
   console.log('✓ Captured 10_desktop_device_mockup_showcase.png');
   await desktopPage.close();
@@ -139,7 +171,12 @@ async function run() {
 
   const recPage = await recordContext.newPage();
   await recPage.goto(BASE_URL);
-  await recPage.waitForTimeout(4000);
+  await recPage.waitForTimeout(6000);
+  await recPage.evaluate(() => {
+    const s = document.getElementById('splash-loading');
+    if (s) s.remove();
+  });
+  await recPage.waitForTimeout(2500);
 
   // Pause on Morning Home Dashboard
   await recPage.waitForTimeout(1800);
@@ -191,7 +228,15 @@ async function run() {
 
   // Click Tab 3: Profile & Analytics
   await recPage.mouse.click(165, 844);
-  await recPage.waitForTimeout(2200);
+  await recPage.waitForTimeout(2000);
+
+  // Click Tab 4: Design Sandbox Studio (Lifted Paper Card, Bézier Graph, Pro Plan, 3D Mascot)
+  await recPage.mouse.click(205, 844);
+  await recPage.waitForTimeout(2500);
+  await recPage.mouse.wheel(0, 300);
+  await recPage.waitForTimeout(2000);
+  await recPage.mouse.wheel(0, -300);
+  await recPage.waitForTimeout(1200);
 
   // Click Tab 0: Home
   await recPage.mouse.click(45, 844);

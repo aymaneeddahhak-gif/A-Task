@@ -4,6 +4,9 @@ import '../theme/app_theme.dart';
 import '../widgets/circular_progress_ring.dart';
 import '../widgets/task_card.dart';
 import '../widgets/content_skeleton_loader.dart';
+import '../widgets/lifted_paper_card.dart';
+import '../widgets/analytics_graph_card.dart';
+import '../widgets/pro_plan_card.dart';
 
 class DesignSandboxScreen extends StatefulWidget {
   final TaskProvider provider;
@@ -15,7 +18,7 @@ class DesignSandboxScreen extends StatefulWidget {
 }
 
 class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
-  int _selectedTab = 0; // 0: Atmosphere Header, 1: Website Style, 2: Cards & Widgets, 3: Live Canvas
+  int _selectedTab = 0; // 0: Sandbox Showcase, 1: Lifted Paper Card, 2: Analytics Graph, 3: Pro Plan, 4: 3D Mascot, 5: Header Lab, 6: Skeleton Lab
   int _atmosphereIndex = 0; // 0: Morning (Light Blue), 1: Afternoon (Warm Orange), 2: Night (Dark with Stars)
   double _fadeSpread = 0.55; // How far the color touches the middle
   bool _isDarkMode = false;
@@ -78,7 +81,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
-                                      'LAB',
+                                      'STUDIO',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
@@ -89,7 +92,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                                 ],
                               ),
                               Text(
-                                'Isolated prototype studio • Safe playground',
+                                'Isolated prototype studio • New Sandbox Designs',
                                 style: TextStyle(fontSize: 11, color: textSecondary),
                               ),
                             ],
@@ -117,19 +120,26 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
 
                   const SizedBox(height: 10),
 
-                  // Mode Tabs
-                  Row(
-                    children: [
-                      _buildTabButton(0, 'Header', borderCol),
-                      const SizedBox(width: 4),
-                      _buildTabButton(1, 'Website', borderCol),
-                      const SizedBox(width: 4),
-                      _buildTabButton(2, 'Cards', borderCol),
-                      const SizedBox(width: 4),
-                      _buildTabButton(3, 'Canvas', borderCol),
-                      const SizedBox(width: 4),
-                      _buildTabButton(4, 'Skeleton', borderCol),
-                    ],
+                  // Mode Tabs with Smooth Horizontal Scrolling
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildTabButton(0, 'Showcase', borderCol, icon: Icons.auto_awesome_rounded),
+                        const SizedBox(width: 6),
+                        _buildTabButton(1, 'Paper Card', borderCol, icon: Icons.note_alt_outlined),
+                        const SizedBox(width: 6),
+                        _buildTabButton(2, 'Analytics', borderCol, icon: Icons.show_chart_rounded),
+                        const SizedBox(width: 6),
+                        _buildTabButton(3, 'Pro Plan', borderCol, icon: Icons.verified_outlined),
+                        const SizedBox(width: 6),
+                        _buildTabButton(4, '3D Mascot', borderCol, icon: Icons.smart_toy_rounded),
+                        const SizedBox(width: 6),
+                        _buildTabButton(5, 'Header Lab', borderCol, icon: Icons.wb_twilight_rounded),
+                        const SizedBox(width: 6),
+                        _buildTabButton(6, 'Skeleton', borderCol, icon: Icons.view_quilt_outlined),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -141,40 +151,25 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_selectedTab == 0) ...[
-                    // Tab 0: Time-of-Day Atmospheric Header Lab
-                    _buildAtmosphericHeaderLab(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 0: All New Sandbox Designs Showcase (Lifted Paper Card, Analytics Graph, Pro Plan, Mascot)
+                    _buildSandboxShowcase(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 1) ...[
-                    // Tab 1: Website Style Hero & Feature Cards
-                    _buildWebsiteHeroCard(cardBg, textPrimary, textSecondary, borderCol),
-                    const SizedBox(height: 16),
-                    _buildFeatureGrid(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 1: Dedicated Lifted Paper Card Deep Dive
+                    _buildLiftedPaperDeepDive(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 2) ...[
-                    // Tab 2: Cards & Widgets
-                    const Text('Task Card Previews with Dynamic Progress Lines', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    const SizedBox(height: 12),
-                    if (widget.provider.allTasks.isNotEmpty)
-                      ...widget.provider.allTasks.take(3).map((t) => TaskCard(
-                            task: t,
-                            onTap: () {},
-                            onToggleComplete: () => widget.provider.toggleTaskComplete(t.id),
-                            onToggleStarred: () => widget.provider.toggleTaskStarred(t.id),
-                          )),
-                    const SizedBox(height: 16),
-                    const Text('Circular Progress Rings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: const [
-                        CircularProgressRing(progress: 0.35, size: 64, progressColor: AppColors.accentOrange, centerChild: Text('35%')),
-                        CircularProgressRing(progress: 0.70, size: 76, progressColor: AppColors.accentBlue, centerChild: Text('70%')),
-                        CircularProgressRing(progress: 1.0, size: 64, progressColor: AppColors.accentGreen, centerChild: Text('100%')),
-                      ],
-                    ),
+                    // Tab 2: Dedicated Analytical Bézier Graph Lab
+                    _buildAnalyticsGraphLab(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 3) ...[
-                    // Tab 3: Live Canvas & Tokens
-                    _buildLiveCanvas(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 3: Dedicated Pro Plan Subscription Lab
+                    _buildProPlanLab(cardBg, textPrimary, textSecondary, borderCol),
+                  ] else if (_selectedTab == 4) ...[
+                    // Tab 4: 3D Chatbot Mascot Showcase
+                    _buildMascotShowcase(cardBg, textPrimary, textSecondary, borderCol),
+                  ] else if (_selectedTab == 5) ...[
+                    // Tab 5: Atmospheric Header Lab
+                    _buildAtmosphericHeaderLab(cardBg, textPrimary, textSecondary, borderCol),
                   ] else ...[
-                    // Tab 4: Facebook-Style Content Skeleton Lab
+                    // Tab 6: Facebook-Style Content Skeleton Lab
                     _buildSkeletonLab(cardBg, textPrimary, textSecondary, borderCol),
                   ],
                   const SizedBox(height: 40),
@@ -187,27 +182,447 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
     );
   }
 
-  Widget _buildTabButton(int index, String title, Color borderCol) {
+  Widget _buildTabButton(int index, String title, Color borderCol, {IconData? icon}) {
     final isSel = _selectedTab == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedTab = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSel ? const Color(0xFF4F46E5) : (_isDarkMode ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
-            borderRadius: BorderRadius.circular(10),
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTab = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSel
+              ? const Color(0xFF4F46E5)
+              : (_isDarkMode ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSel ? const Color(0xFF4338CA) : Colors.transparent,
+            width: 1,
           ),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
-              color: isSel ? Colors.white : (_isDarkMode ? Colors.white70 : const Color(0xFF64748B)),
+          boxShadow: isSel
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14,
+                color: isSel ? Colors.white : (_isDarkMode ? Colors.white70 : const Color(0xFF64748B)),
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
+                color: isSel ? Colors.white : (_isDarkMode ? Colors.white70 : const Color(0xFF64748B)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // TAB 0: ALL NEW SANDBOX DESIGNS SHOWCASE
+  // ==========================================
+  Widget _buildSandboxShowcase(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Studio Intro Card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _isDarkMode
+                  ? [const Color(0xFF1E1B4B), const Color(0xFF312E81)]
+                  : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _isDarkMode ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE),
+              width: 1.2,
             ),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4F46E5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.palette_rounded, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sandbox Design Studio',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: _isDarkMode ? Colors.white : const Color(0xFF1E1B4B),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Lifted paper card • Bézier curve graph • Pro plan • 3D mascot',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _isDarkMode ? const Color(0xFFA5B4FC) : const Color(0xFF4338CA),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+
+        const SizedBox(height: 28),
+
+        // Section 1: Tactile Lifted Paper Task Card (sanbox/card.png)
+        _buildSectionTitle(
+          title: '1. Tactile Lifted Paper Task Card',
+          subtitle: 'Upper-left corner lifted with physical ambient drop shadow & curled edge shading.',
+          icon: Icons.note_alt_outlined,
+          badgeText: 'card.png',
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+        const SizedBox(height: 14),
+        LiftedPaperTaskCard(
+          liftIntensity: 0.70,
+          showLiftSlider: true,
+          onAddTask: () => widget.provider.openAddTask(),
+        ),
+
+        const SizedBox(height: 36),
+
+        // Section 2: Analytical Bézier Line Graph Card (sanbox/graph.png)
+        _buildSectionTitle(
+          title: '2. Analytical Line Graph Card',
+          subtitle: 'Multi-stop gradient Bézier curve, active 632 Jun badge & total focus metrics.',
+          icon: Icons.show_chart_rounded,
+          badgeText: 'graph.png',
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+        const SizedBox(height: 14),
+        AnalyticsGraphCard(isNight: _isDarkMode),
+
+        const SizedBox(height: 36),
+
+        // Section 3: Frosted Pro Subscription Plan Card (sanbox/plan.png)
+        _buildSectionTitle(
+          title: '3. Pro Subscription Upgrade Card',
+          subtitle: 'Frosted container with 4x Pro lime badge, close button & escalation perks.',
+          icon: Icons.verified_outlined,
+          badgeText: 'plan.png',
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+        const SizedBox(height: 14),
+        ProPlanCard(
+          isModal: false,
+          onClose: () => widget.provider.showToast('Subscription card closed'),
+          onUpgrade: () => widget.provider.showToast(
+            'Upgraded to Pro! ⚡ Unlimited AI CRUD active',
+            icon: Icons.stars_rounded,
+            color: const Color(0xFF10B981),
+          ),
+        ),
+
+        const SizedBox(height: 36),
+
+        // Section 4: 3D Chatbot Companion Mascot (sanbox/chatbotmascot.jpg)
+        _buildSectionTitle(
+          title: '4. 3D AI Assistant Mascot Companion',
+          subtitle: 'Avatar with goggles, headset, blue puffer jacket, holographic HUD & flying drone.',
+          icon: Icons.smart_toy_rounded,
+          badgeText: 'chatbotmascot.jpg',
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+        const SizedBox(height: 14),
+        _buildMascotCard(cardBg, textPrimary, textSecondary, borderCol),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String badgeText,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: const Color(0xFF6366F1)),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: _isDarkMode ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: _isDarkMode ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Text(
+                badgeText,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6366F1),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: TextStyle(fontSize: 12, color: textSecondary),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 1: DEDICATED LIFTED PAPER CARD LAB
+  // ==========================================
+  Widget _buildLiftedPaperDeepDive(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Tactile Lifted Paper Playground',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Interactive physics: adjust peel intensity or tap upper-left corner to bounce the fold.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: textSecondary),
+        ),
+        const SizedBox(height: 24),
+        LiftedPaperTaskCard(
+          liftIntensity: 0.75,
+          showLiftSlider: true,
+          onAddTask: () => widget.provider.openAddTask(),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 2: DEDICATED ANALYTICAL GRAPH LAB
+  // ==========================================
+  Widget _buildAnalyticsGraphLab(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Analytics Bézier Velocity Graph',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Live interactive curve: click any month (Jan-Jul) to inspect velocity metrics and tooltip.',
+          style: TextStyle(fontSize: 12, color: textSecondary),
+        ),
+        const SizedBox(height: 20),
+        AnalyticsGraphCard(isNight: _isDarkMode),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 3: DEDICATED PRO PLAN LAB
+  // ==========================================
+  Widget _buildProPlanLab(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Pro Subscription Modal',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Full-feature frosted card offering advanced AI planning, 4x atmospheric themes & escalations.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: textSecondary),
+        ),
+        const SizedBox(height: 24),
+        ProPlanCard(
+          isModal: false,
+          onClose: () => widget.provider.showToast('Subscription dismissed'),
+          onUpgrade: () => widget.provider.showToast(
+            'Pro Plan Activated! ✨',
+            icon: Icons.check_circle_rounded,
+            color: const Color(0xFF10B981),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 4: 3D CHATBOT MASCOT SHOWCASE
+  // ==========================================
+  Widget _buildMascotShowcase(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '3D AI Assistant & Drone Companion',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Active mascot powering the AI Chatbot assistant in tab 3 (replaces previous monster chatbot).',
+          style: TextStyle(fontSize: 12, color: textSecondary),
+        ),
+        const SizedBox(height: 20),
+        _buildMascotCard(cardBg, textPrimary, textSecondary, borderCol),
+      ],
+    );
+  }
+
+  Widget _buildMascotCard(Color cardBg, Color textPrimary, Color textSecondary, Color borderCol) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: borderCol, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(_isDarkMode ? 0.3 : 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Mascot Image with Rounded Corners
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(26),
+              topRight: Radius.circular(26),
+            ),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.asset(
+                'assets/images/chatbot_mascot.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFF1E293B),
+                  child: const Center(
+                    child: Icon(Icons.smart_toy_rounded, size: 48, color: Colors.white54),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'AI Task Agent Companion',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Active Mascot',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Equipped with 3D goggles, headset microphone, holographic HUD, and an autonomous flying drone companion.',
+                  style: TextStyle(fontSize: 12.5, color: textSecondary, height: 1.35),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    widget.provider.setSelectedTab(2); // Jump directly to Chatbot screen!
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                  label: const Text('Open AI Assistant Chatbot'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -468,18 +468,38 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 ),
                               ),
 
-                              // Card Center: Furry Creature (Clickable to transition to screen 2!)
+                              // Card Center: 3D AI Mascot Companion (Clickable to transition to screen 2!)
                               Expanded(
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () => _openChatView(),
                                   child: Center(
-                                    child: Image.asset(
-                                      'assets/images/chatbot_monster.png',
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => Image.asset(
-                                        'assets/images/mascot.png',
-                                        fit: BoxFit.contain,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(22),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.2),
+                                            blurRadius: 16,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(22),
+                                        child: Image.asset(
+                                          'assets/images/chatbot_mascot.jpg',
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Image.asset(
+                                            'assets/images/chatbot_monster.png',
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (_, __, ___) => Image.asset(
+                                              'assets/images/mascot.png',
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
