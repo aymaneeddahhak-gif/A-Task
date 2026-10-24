@@ -122,6 +122,18 @@
     </div>
   </div>
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (let name of names) caches.delete(name);
+      });
+    }
     window.addEventListener('flutter-first-frame', function () {
       var splash = document.getElementById('splash-loading');
       if (splash) {
@@ -132,6 +144,6 @@
       }
     });
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js?v=scenic_auto_v2" async></script>
 </body>
 </html>
