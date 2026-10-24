@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 enum ScenicSceneType {
-  sunnyDesert, // Morning Run / Coffee Time / Morning Ignition
-  cloudyMountain, // Deep Study / Coding / Morning Focus
-  windyWindmill, // Team Sync / Lecture / Afternoon Sprint
-  fogLighthouse, // Research / Architecture / Outdoor Walk
-  snowCabin, // Cozy Reading / Evening Study / Monthly Review
-  rainyBoat, // Night Run / Evening Reflection / Wind-Down
+  morningRun, // 1. Cartoon person running in morning sun
+  coffeeTime, // 2. Cartoon person enjoying steaming coffee & planning
+  deepStudy, // 3. Cartoon student/worker coding with headphones & laptop
+  workoutGym, // 4. Cartoon person lifting dumbbells / fitness on green hills
+  eveningReading, // 5. Cartoon person reading an open book under a warm lamp
+  nightRun, // 6. Cartoon person running at night under a glowing streetlamp
 }
 
 class ScenicTaskCardModel {
@@ -21,7 +21,7 @@ class ScenicTaskCardModel {
   final String routineHorizon; // 'Day', 'Week', 'Month'
   final String dateOrRecurrence;
   final String categoryTag;
-  final String status; // 'Locked In', 'In Progress', 'Scheduled', 'Done'
+  final String status; // 'Locked In', 'In Progress', 'Scheduled', 'Completed'
   final double progress;
   final bool isCompleted;
   final bool isStarred;
@@ -78,7 +78,7 @@ class ScenicTaskCardModel {
     );
   }
 
-  /// Automatically resolves the weather temperature, condition, and scenic illustration
+  /// Automatically resolves the cartoon activity scene, weather temperature, and sky palette
   /// from the task title, category, and time — so the user NEVER enters weather manually.
   static ScenicTaskCardModel createAuto({
     required String id,
@@ -103,39 +103,40 @@ class ScenicTaskCardModel {
     if (overrideScene != null) {
       scene = overrideScene;
     } else if (lower.contains('night run') ||
-        lower.contains('sleep') ||
-        lower.contains('reflect') ||
-        lower.contains('journal') ||
-        (isPM && (lower.contains('run') || lower.contains('night')))) {
-      scene = ScenicSceneType.rainyBoat;
+        lower.contains('evening run') ||
+        (isPM && lower.contains('run')) ||
+        lower.contains('night')) {
+      scene = ScenicSceneType.nightRun;
+    } else if (lower.contains('coffee') ||
+        lower.contains('espresso') ||
+        lower.contains('latte') ||
+        lower.contains('breakfast') ||
+        lower.contains('tea')) {
+      scene = ScenicSceneType.coffeeTime;
+    } else if (lower.contains('morning run') ||
+        lower.contains('run') ||
+        lower.contains('jog') ||
+        lower.contains('cardio')) {
+      scene = ScenicSceneType.morningRun;
     } else if (lower.contains('read') ||
         lower.contains('book') ||
-        lower.contains('cabin') ||
+        lower.contains('journal') ||
         lower.contains('month') ||
         lower.contains('budget')) {
-      scene = ScenicSceneType.snowCabin;
-    } else if (lower.contains('morning run') ||
-        lower.contains('coffee') ||
-        lower.contains('breakfast') ||
-        lower.contains('sun')) {
-      scene = ScenicSceneType.sunnyDesert;
-    } else if (lower.contains('study') ||
-        lower.contains('code') ||
-        lower.contains('coding') ||
-        lower.contains('deep')) {
-      scene = ScenicSceneType.cloudyMountain;
-    } else if (lower.contains('sync') ||
-        lower.contains('meet') ||
-        lower.contains('class') ||
-        lower.contains('lecture') ||
-        lower.contains('sprint')) {
-      scene = ScenicSceneType.windyWindmill;
+      scene = ScenicSceneType.eveningReading;
+    } else if (lower.contains('gym') ||
+        lower.contains('workout') ||
+        lower.contains('fitness') ||
+        lower.contains('train') ||
+        lower.contains('sport') ||
+        lower.contains('stretch')) {
+      scene = ScenicSceneType.workoutGym;
     } else {
-      scene = ScenicSceneType.fogLighthouse;
+      scene = ScenicSceneType.deepStudy;
     }
 
     switch (scene) {
-      case ScenicSceneType.sunnyDesert:
+      case ScenicSceneType.morningRun:
         return ScenicTaskCardModel(
           id: id,
           title: title,
@@ -152,14 +153,38 @@ class ScenicTaskCardModel {
           isStarred: isStarred,
           autoScene: scene,
           autoDegree: '23°',
-          autoCondition: 'Sunny',
+          autoCondition: 'Sunny • Morning Run',
           autoSkyGradient: const [
             Color(0xFFFBC02D),
             Color(0xFFFDE047),
             Color(0xFFF59E0B),
           ],
         );
-      case ScenicSceneType.cloudyMountain:
+      case ScenicSceneType.coffeeTime:
+        return ScenicTaskCardModel(
+          id: id,
+          title: title,
+          description: description,
+          startTime: startTime,
+          endTime: endTime,
+          duration: duration,
+          routineHorizon: routineHorizon,
+          dateOrRecurrence: dateOrRecurrence,
+          categoryTag: categoryTag,
+          status: status,
+          progress: progress,
+          isCompleted: isCompleted,
+          isStarred: isStarred,
+          autoScene: scene,
+          autoDegree: '21°',
+          autoCondition: 'Warm • Coffee Break',
+          autoSkyGradient: const [
+            Color(0xFFF59E0B),
+            Color(0xFFFBBF24),
+            Color(0xFFD97706),
+          ],
+        );
+      case ScenicSceneType.deepStudy:
         return ScenicTaskCardModel(
           id: id,
           title: title,
@@ -176,14 +201,14 @@ class ScenicTaskCardModel {
           isStarred: isStarred,
           autoScene: scene,
           autoDegree: '18°',
-          autoCondition: 'Cloudy',
+          autoCondition: 'Cloudy • Deep Focus',
           autoSkyGradient: const [
+            Color(0xFF38BDF8),
             Color(0xFF7DD3FC),
-            Color(0xFFBAE6FD),
-            Color(0xFF93C5FD),
+            Color(0xFF60A5FA),
           ],
         );
-      case ScenicSceneType.windyWindmill:
+      case ScenicSceneType.workoutGym:
         return ScenicTaskCardModel(
           id: id,
           title: title,
@@ -199,15 +224,15 @@ class ScenicTaskCardModel {
           isCompleted: isCompleted,
           isStarred: isStarred,
           autoScene: scene,
-          autoDegree: '14°',
-          autoCondition: 'Windy',
+          autoDegree: '16°',
+          autoCondition: 'Breezy • Workout',
           autoSkyGradient: const [
+            Color(0xFF84CC16),
             Color(0xFFA8CA7A),
-            Color(0xFFCDE4A4),
-            Color(0xFFB5D686),
+            Color(0xFF65A30D),
           ],
         );
-      case ScenicSceneType.fogLighthouse:
+      case ScenicSceneType.eveningReading:
         return ScenicTaskCardModel(
           id: id,
           title: title,
@@ -223,39 +248,15 @@ class ScenicTaskCardModel {
           isCompleted: isCompleted,
           isStarred: isStarred,
           autoScene: scene,
-          autoDegree: '20°',
-          autoCondition: 'Fog',
+          autoDegree: '15°',
+          autoCondition: 'Cozy • Reading',
           autoSkyGradient: const [
-            Color(0xFF94A8BE),
-            Color(0xFFCBD9E6),
-            Color(0xFFDCE6F0),
-          ],
-        );
-      case ScenicSceneType.snowCabin:
-        return ScenicTaskCardModel(
-          id: id,
-          title: title,
-          description: description,
-          startTime: startTime,
-          endTime: endTime,
-          duration: duration,
-          routineHorizon: routineHorizon,
-          dateOrRecurrence: dateOrRecurrence,
-          categoryTag: categoryTag,
-          status: status,
-          progress: progress,
-          isCompleted: isCompleted,
-          isStarred: isStarred,
-          autoScene: scene,
-          autoDegree: '-3°',
-          autoCondition: 'Snow',
-          autoSkyGradient: const [
+            Color(0xFF6366F1),
             Color(0xFF818CF8),
             Color(0xFFA5B4FC),
-            Color(0xFFC7D2FE),
           ],
         );
-      case ScenicSceneType.rainyBoat:
+      case ScenicSceneType.nightRun:
         return ScenicTaskCardModel(
           id: id,
           title: title,
@@ -272,11 +273,11 @@ class ScenicTaskCardModel {
           isStarred: isStarred,
           autoScene: scene,
           autoDegree: '12°',
-          autoCondition: 'Rainy',
+          autoCondition: 'Clear Night • Run',
           autoSkyGradient: const [
+            Color(0xFF1E293B),
+            Color(0xFF334155),
             Color(0xFF475569),
-            Color(0xFF64748B),
-            Color(0xFF4E5E76),
           ],
         );
     }
@@ -284,92 +285,94 @@ class ScenicTaskCardModel {
 }
 
 /// Default Student & Worker Routine Tasks across Day, Week, and Month
-/// (All 6 scenic cards + extra real-life presets, with auto-assigned weather & scenes)
+/// featuring cartoon characters performing the exact task on every card!
 final List<ScenicTaskCardModel> kInitialScenicTaskCards = [
-  // 1. Morning Run / Coffee Ignition (Sunny Desert / Sunrise Camp)
+  // 1. Morning Running (Cartoon Runner in Golden Sunrise)
   ScenicTaskCardModel.createAuto(
     id: 'scenic_1',
-    title: 'Morning Run & Coffee Time',
-    description: '5km outdoor park run followed by espresso & top 3 daily goals',
-    startTime: '07:30 AM',
-    endTime: '08:30 AM',
-    duration: '1h',
+    title: 'Morning 5km Park Run',
+    description: 'Outdoor cardio pace along the sunrise trail + hydration',
+    startTime: '07:00 AM',
+    endTime: '07:45 AM',
+    duration: '45m',
     routineHorizon: 'Day',
     dateOrRecurrence: 'Daily • Mon.Mar 26',
-    categoryTag: 'Morning Run • Coffee',
+    categoryTag: 'Morning Run',
     status: 'Completed',
     progress: 1.0,
     isCompleted: true,
     isStarred: true,
-    overrideScene: ScenicSceneType.sunnyDesert,
+    overrideScene: ScenicSceneType.morningRun,
   ),
-  // 2. Deep Study / Coding Sprint (Cloudy Mountain Birches)
+  // 2. Coffee Time & Daily Plan (Cartoon Person with Steaming Coffee Cup)
   ScenicTaskCardModel.createAuto(
     id: 'scenic_2',
+    title: 'Coffee Time & Top 3 Goals',
+    description: 'Enjoy morning espresso & plan today’s key priorities',
+    startTime: '08:30 AM',
+    endTime: '09:00 AM',
+    duration: '30m',
+    routineHorizon: 'Day',
+    dateOrRecurrence: 'Daily • Mon.Mar 26',
+    categoryTag: 'Coffee Time',
+    status: 'Completed',
+    progress: 1.0,
+    isCompleted: true,
+    isStarred: true,
+    overrideScene: ScenicSceneType.coffeeTime,
+  ),
+  // 3. Deep Study & Coding Sprint (Cartoon Person with Headphones & Laptop)
+  ScenicTaskCardModel.createAuto(
+    id: 'scenic_3',
     title: 'Deep Study & Coding Sprint',
-    description: 'Core architecture module, algorithms practice & zero distractions',
+    description: 'Core architecture build, lecture notes & algorithms practice',
     startTime: '09:30 AM',
     endTime: '11:30 AM',
     duration: '2h',
     routineHorizon: 'Day',
     dateOrRecurrence: 'Daily • Mon.Mar 26',
-    categoryTag: 'Deep Focus',
+    categoryTag: 'Deep Study',
     status: 'In Progress',
     progress: 0.65,
     isStarred: true,
-    overrideScene: ScenicSceneType.cloudyMountain,
+    overrideScene: ScenicSceneType.deepStudy,
   ),
-  // 3. Afternoon Lecture / Team Sync (Windy Meadow Windmill)
-  ScenicTaskCardModel.createAuto(
-    id: 'scenic_3',
-    title: 'Weekly Sprint Sync & Class',
-    description: 'Review weekly deliverables, campus lab notes & team roadmap',
-    startTime: '02:10 PM',
-    endTime: '03:10 PM',
-    duration: '1h',
-    routineHorizon: 'Week',
-    dateOrRecurrence: 'Weekly • Every Mon',
-    categoryTag: 'Weekly Sync',
-    status: 'Locked In',
-    progress: 0.40,
-    overrideScene: ScenicSceneType.windyWindmill,
-  ),
-  // 4. Late Afternoon Architecture / Walk (Foggy Coastal Lighthouse)
+  // 4. Afternoon Workout & Fitness (Cartoon Athlete Lifting Dumbbells)
   ScenicTaskCardModel.createAuto(
     id: 'scenic_4',
-    title: 'Afternoon Walk & Research',
-    description: '30m coastal fresh-air walk & system design documentation review',
-    startTime: '04:15 PM',
-    endTime: '05:00 PM',
-    duration: '45m',
+    title: 'Weekly Strength & Mobility',
+    description: 'Upper-body dumbbell session & full-body stretching routine',
+    startTime: '05:00 PM',
+    endTime: '06:00 PM',
+    duration: '1h',
     routineHorizon: 'Week',
-    dateOrRecurrence: 'Weekly • Wed & Fri',
-    categoryTag: 'Recharge',
-    status: 'Scheduled',
-    progress: 0.25,
-    overrideScene: ScenicSceneType.fogLighthouse,
+    dateOrRecurrence: 'Weekly • Mon, Wed, Fri',
+    categoryTag: 'Workout',
+    status: 'Locked In',
+    progress: 0.45,
+    overrideScene: ScenicSceneType.workoutGym,
   ),
-  // 5. Evening Reading / Monthly Budget Review (Snowy Cozy Lit Cabin)
+  // 5. Evening Reading & Monthly Review (Cartoon Person Reading Book by Lamp)
   ScenicTaskCardModel.createAuto(
     id: 'scenic_5',
-    title: 'Monthly Budget & Reading',
-    description: 'Track monthly savings, bills checklist & read 20 pages before bed',
+    title: 'Evening Reading & Monthly Plan',
+    description: 'Read 20 pages & review monthly budget and career milestones',
     startTime: '08:30 PM',
     endTime: '09:30 PM',
     duration: '1h',
     routineHorizon: 'Month',
     dateOrRecurrence: 'Monthly • Every 1st',
-    categoryTag: 'Monthly Growth',
+    categoryTag: 'Reading & Review',
     status: 'Locked In',
     progress: 0.50,
     isStarred: true,
-    overrideScene: ScenicSceneType.snowCabin,
+    overrideScene: ScenicSceneType.eveningReading,
   ),
-  // 6. Night Running & Reflection Log (Rainy Indigo Lake & Glowing Lanterns)
+  // 6. Night Running under Streetlamp (Cartoon Runner at Night)
   ScenicTaskCardModel.createAuto(
     id: 'scenic_6',
-    title: 'Night Run & Evening Journal',
-    description: '3km evening jog under city lights, stretching & gratitude log',
+    title: 'Night Run & Decompress',
+    description: '3km evening jog under city streetlamps to clear the mind',
     startTime: '09:40 PM',
     endTime: '10:25 PM',
     duration: '45m',
@@ -377,17 +380,17 @@ final List<ScenicTaskCardModel> kInitialScenicTaskCards = [
     dateOrRecurrence: 'Daily • Mon.Mar 26',
     categoryTag: 'Night Run',
     status: 'Scheduled',
-    progress: 0.20,
-    overrideScene: ScenicSceneType.rainyBoat,
+    progress: 0.25,
+    overrideScene: ScenicSceneType.nightRun,
   ),
 ];
 
 /// Quick-pick presets so the user can test how picking ONLY a task + routine horizon
-/// automatically assigns the temperature, weather condition, and scenic illustration.
+/// automatically assigns the cartoon character scene, temperature, and weather condition.
 const List<Map<String, String>> kQuickTaskPresets = [
   {
     'title': 'Morning 5km Run',
-    'desc': 'Outdoor cardio pace + hydration before work/class',
+    'desc': 'Outdoor sunrise run + hydration before class/work',
     'time': '07:00 AM - 07:45 AM',
     'duration': '45m',
     'tag': 'Morning Run',
@@ -395,40 +398,48 @@ const List<Map<String, String>> kQuickTaskPresets = [
   },
   {
     'title': 'Coffee Time & Plan',
-    'desc': 'Fresh brew + review top 3 priorities for today',
-    'time': '08:30 AM - 08:50 AM',
-    'duration': '20m',
+    'desc': 'Fresh espresso + review top 3 priorities for today',
+    'time': '08:30 AM - 09:00 AM',
+    'duration': '30m',
     'tag': 'Coffee Time',
     'horizon': 'Day',
   },
   {
-    'title': 'Night Run & Stretch',
-    'desc': 'Evening 3km run to decompress after study/work',
-    'time': '08:15 PM - 09:00 PM',
+    'title': 'Deep Coding & Study',
+    'desc': 'Headphones on — 2h focused sprint on main project',
+    'time': '10:00 AM - 12:00 PM',
+    'duration': '2h',
+    'tag': 'Deep Study',
+    'horizon': 'Week',
+  },
+  {
+    'title': 'Gym & Dumbbell Workout',
+    'desc': 'Strength training & mobility session',
+    'time': '05:30 PM - 06:30 PM',
+    'duration': '1h',
+    'tag': 'Workout',
+    'horizon': 'Week',
+  },
+  {
+    'title': 'Night Run under Stars',
+    'desc': 'Evening 3km run along the lit park path',
+    'time': '08:30 PM - 09:15 PM',
     'duration': '45m',
     'tag': 'Night Run',
     'horizon': 'Day',
   },
   {
-    'title': 'Weekly Study & Sprint',
-    'desc': 'Organize Monday–Friday lectures, exams & project tasks',
-    'time': '10:00 AM - 11:30 AM',
-    'duration': '1h 30m',
-    'tag': 'Weekly Plan',
-    'horizon': 'Week',
-  },
-  {
-    'title': 'Monthly Budget & Goals',
-    'desc': 'Review monthly expenses, savings & portfolio milestones',
-    'time': '07:00 PM - 08:00 PM',
-    'duration': '1h',
-    'tag': 'Monthly Review',
+    'title': 'Read 20 Pages & Budget',
+    'desc': 'Cozy evening book reading & monthly goal check-in',
+    'time': '09:30 PM - 10:15 PM',
+    'duration': '45m',
+    'tag': 'Reading',
     'horizon': 'Month',
   },
 ];
 
-/// Interactive Sandbox showcase combining `designcard.png` + real A-Task `TaskCard`
-/// with 100% automatic weather/scene matching and Day / Week / Month routine filters.
+/// Interactive Sandbox showcase combining `designcard.png` flat-vector style
+/// with Cartoon Character Task Scenes, 3D Top-Left Corner Curl, and real task details.
 class ScenicCardsSandboxShowcase extends StatefulWidget {
   const ScenicCardsSandboxShowcase({super.key});
 
@@ -441,12 +452,13 @@ class _ScenicCardsSandboxShowcaseState
     extends State<ScenicCardsSandboxShowcase> {
   late List<ScenicTaskCardModel> _cards;
   double _curlSize = 36.0;
-  bool _twoColumnGrid = false; // Default to full detailed task cards so all real task details shine
+  bool _twoColumnGrid = false;
+  bool _showCartoonCharacters = true;
   String _selectedHorizon = 'All'; // 'All', 'Day', 'Week', 'Month'
   bool _showAutoCreator = false;
   final TextEditingController _taskTitleController = TextEditingController();
   String _newTaskHorizon = 'Day';
-  String _newTaskTimeSlot = '07:30 AM - 08:15 AM';
+  final String _newTaskTimeSlot = '07:30 AM - 08:15 AM';
 
   @override
   void initState() {
@@ -536,7 +548,7 @@ class _ScenicCardsSandboxShowcaseState
     final newCard = ScenicTaskCardModel.createAuto(
       id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
       title: title,
-      description: 'Auto-matched scene & weather • $_newTaskHorizon Routine',
+      description: 'Auto-matched cartoon scene & weather • $_newTaskHorizon Routine',
       startTime: parts.first,
       endTime: parts.length > 1 ? parts.last : '09:00 AM',
       duration: '45m',
@@ -580,38 +592,57 @@ class _ScenicCardsSandboxShowcaseState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Badge + Layout Toggle + Auto-Create Task Button
+              // Top Row: Cartoon Mode Badge + Grid/Full Toggle + Test Task Button
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
+                  GestureDetector(
+                    onTap: () => setState(
+                      () => _showCartoonCharacters = !_showCartoonCharacters,
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF5),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: const Color(0xFFA7F3D0)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          size: 12,
-                          color: Color(0xFF059669),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _showCartoonCharacters
+                            ? const Color(0xFFFEF3C7)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: _showCartoonCharacters
+                              ? const Color(0xFFFCD34D)
+                              : const Color(0xFFCBD5E1),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'AUTO WEATHER & SCENE',
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF047857),
-                            letterSpacing: 0.3,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _showCartoonCharacters
+                                ? Icons.directions_run_rounded
+                                : Icons.landscape_rounded,
+                            size: 13,
+                            color: _showCartoonCharacters
+                                ? const Color(0xFFB45309)
+                                : const Color(0xFF475569),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            _showCartoonCharacters
+                                ? 'CARTOON TASK ART'
+                                : 'CLASSIC SCENIC ART',
+                            style: GoogleFonts.poppins(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: _showCartoonCharacters
+                                  ? const Color(0xFFB45309)
+                                  : const Color(0xFF475569),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -759,11 +790,11 @@ class _ScenicCardsSandboxShowcaseState
                 ],
               ),
 
-              // Expandable Auto-Scene Task Tester (User ONLY picks task & horizon; Weather & Scene are 100% automatic)
+              // Expandable Auto-Scene Task Tester
               if (_showAutoCreator) ...[
                 const Divider(height: 18, color: Color(0xFFE2E8F0)),
                 Text(
-                  'Pick a quick task or type your own (Weather & Scene are auto-assigned!):',
+                  'Pick a task or type your own (Cartoon Scene & Weather are auto-assigned!):',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -922,6 +953,7 @@ class _ScenicCardsSandboxShowcaseState
                 card: item,
                 curlSize: _curlSize,
                 compact: true,
+                showCartoonCharacter: _showCartoonCharacters,
                 onToggleComplete: () => _toggleCardComplete(item.id),
                 onToggleStar: () => _toggleCardStar(item.id),
               );
@@ -940,6 +972,7 @@ class _ScenicCardsSandboxShowcaseState
                         card: item,
                         curlSize: _curlSize + 4,
                         compact: false,
+                        showCartoonCharacter: _showCartoonCharacters,
                         onToggleComplete: () => _toggleCardComplete(item.id),
                         onToggleStar: () => _toggleCardStar(item.id),
                       ),
@@ -981,17 +1014,12 @@ class _ScenicCardsSandboxShowcaseState
   }
 }
 
-/// Combined Scenic Curled Task Card (`designcard.png` + Real App `TaskCard` details)
-/// featuring:
-/// - 3D Top-Left Corner Paper Curl
-/// - Auto-assigned Weather Degree & Condition (`23° Sunny`, etc.)
-/// - Real Task Title, Description, Routine Horizon Badge (`DAY`/`WEEK`/`MONTH`), Duration & Status
-/// - Sleek Progress Bar along the horizon seam
-/// - Crisp White Footer with interactive Check Circle, Start–End Time, and Date/Recurrence
+/// Combined Scenic Curled Task Card (`designcard.png` + Cartoon Character Task Art + Real Task Details)
 class ScenicCurledTaskCard extends StatelessWidget {
   final ScenicTaskCardModel card;
   final double curlSize;
   final bool compact;
+  final bool showCartoonCharacter;
   final VoidCallback? onToggleComplete;
   final VoidCallback? onToggleStar;
 
@@ -1000,6 +1028,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
     required this.card,
     this.curlSize = 36.0,
     this.compact = false,
+    this.showCartoonCharacter = true,
     this.onToggleComplete,
     this.onToggleStar,
   });
@@ -1054,15 +1083,16 @@ class ScenicCurledTaskCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Custom Scenic Vector Artwork
+                      // Custom Scenic Vector Artwork with Cartoon Person performing the Task
                       CustomPaint(
                         painter: _ScenicIllustrationPainter(
                           scene: card.autoScene,
                           skyGradient: card.autoSkyGradient,
+                          showCartoonCharacter: showCartoonCharacter,
                         ),
                       ),
 
-                      // Subtle dark readability scrim on the left side for task text
+                      // Subtle left-side readability gradient for task text
                       Positioned.fill(
                         child: DecoratedBox(
                           decoration: BoxDecoration(
@@ -1070,11 +1100,11 @@ class ScenicCurledTaskCard extends StatelessWidget {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                Colors.black.withValues(alpha: 0.18),
-                                Colors.black.withValues(alpha: 0.04),
+                                Colors.black.withValues(alpha: 0.20),
+                                Colors.black.withValues(alpha: 0.05),
                                 Colors.transparent,
                               ],
-                              stops: const [0.0, 0.58, 1.0],
+                              stops: const [0.0, 0.55, 1.0],
                             ),
                           ),
                         ),
@@ -1087,7 +1117,6 @@ class ScenicCurledTaskCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Routine Horizon Pill (DAY / WEEK / MONTH)
                             Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: compact ? 6 : 9,
@@ -1162,18 +1191,16 @@ class ScenicCurledTaskCard extends StatelessWidget {
                         top: compact
                             ? math.max(18, effectiveCurl * 0.56)
                             : math.max(22, effectiveCurl * 0.55),
-                        right: compact ? 10 : 95,
+                        right: compact ? 10 : 115,
                         bottom: compact ? 8 : 12,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Weather + Task Title Block
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Auto Weather Row (`23° Sunny`)
                                 Row(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.baseline,
@@ -1204,7 +1231,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.poppins(
-                                          fontSize: compact ? 10.5 : 13,
+                                          fontSize: compact ? 10 : 12.5,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.white.withValues(
                                             alpha: 0.95,
@@ -1215,7 +1242,6 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                   ],
                                 ),
                                 SizedBox(height: compact ? 3 : 5),
-                                // REAL TASK TITLE
                                 Text(
                                   card.title,
                                   maxLines: 1,
@@ -1259,7 +1285,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                               ],
                             ),
 
-                            // Frosted Glass Pills: Duration (`⏱ 1h`) + Category (`Morning Run`)
+                            // Frosted Glass Pills: Duration (`⏱ 45m`) + Category (`Morning Run`)
                             Row(
                               children: [
                                 Container(
@@ -1358,7 +1384,6 @@ class ScenicCurledTaskCard extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Left: Interactive Check Circle + Start–End Time
                         Flexible(
                           child: GestureDetector(
                             onTap: onToggleComplete,
@@ -1396,7 +1421,6 @@ class ScenicCurledTaskCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        // Right: Recurrence / Date (`Daily • Mon.Mar 26`)
                         Text(
                           card.dateOrRecurrence,
                           maxLines: 1,
@@ -1536,7 +1560,6 @@ class _TopLeftCornerCurlFlapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = curlSize;
 
-    // 1. Cast shadow projected onto the card below the curled triangle
     final shadowPath = Path()
       ..moveTo(0, c)
       ..quadraticBezierTo(c * 0.46, c * 0.46, c, 0)
@@ -1551,7 +1574,6 @@ class _TopLeftCornerCurlFlapPainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.5),
     );
 
-    // 2. The 3D curled paper flap itself
     final flapPath = Path()
       ..moveTo(0, c)
       ..quadraticBezierTo(c * 0.46, c * 0.46, c, 0)
@@ -1574,7 +1596,6 @@ class _TopLeftCornerCurlFlapPainter extends CustomPainter {
 
     canvas.drawPath(flapPath, flapPaint);
 
-    // 3. Bright specular highlight along the curved paper fold spine
     final spineHighlight = Path()
       ..moveTo(1, c - 1)
       ..quadraticBezierTo(c * 0.47, c * 0.47, c - 1, 1);
@@ -1586,7 +1607,6 @@ class _TopLeftCornerCurlFlapPainter extends CustomPainter {
         ..strokeWidth = 1.4,
     );
 
-    // 4. Crisp subtle edge border on the curled flap underside
     final innerEdge = Path()
       ..moveTo(c, 0)
       ..quadraticBezierTo(c * 0.94, c * 0.56, c * 0.88, c * 0.88)
@@ -1607,14 +1627,18 @@ class _TopLeftCornerCurlFlapPainter extends CustomPainter {
   }
 }
 
-/// Custom vector painter that renders the 6 scenic illustrations from `designcard.png`.
+/// Custom flat-vector painter in the exact style of `designcard.png` that draws:
+/// - The layered scenic hills, sun/moon/clouds/trees
+/// - A stylized flat-vector CARTOON PERSON performing the exact task on the right side!
 class _ScenicIllustrationPainter extends CustomPainter {
   final ScenicSceneType scene;
   final List<Color> skyGradient;
+  final bool showCartoonCharacter;
 
   _ScenicIllustrationPainter({
     required this.scene,
     required this.skyGradient,
+    this.showCartoonCharacter = true,
   });
 
   @override
@@ -1632,48 +1656,51 @@ class _ScenicIllustrationPainter extends CustomPainter {
     );
 
     switch (scene) {
-      case ScenicSceneType.sunnyDesert:
-        _paintSunnyDesert(canvas, size);
+      case ScenicSceneType.morningRun:
+        _paintMorningRunScene(canvas, size);
         break;
-      case ScenicSceneType.cloudyMountain:
-        _paintCloudyMountain(canvas, size);
+      case ScenicSceneType.coffeeTime:
+        _paintCoffeeTimeScene(canvas, size);
         break;
-      case ScenicSceneType.windyWindmill:
-        _paintWindyWindmill(canvas, size);
+      case ScenicSceneType.deepStudy:
+        _paintDeepStudyScene(canvas, size);
         break;
-      case ScenicSceneType.fogLighthouse:
-        _paintFogLighthouse(canvas, size);
+      case ScenicSceneType.workoutGym:
+        _paintWorkoutGymScene(canvas, size);
         break;
-      case ScenicSceneType.snowCabin:
-        _paintSnowCabin(canvas, size);
+      case ScenicSceneType.eveningReading:
+        _paintEveningReadingScene(canvas, size);
         break;
-      case ScenicSceneType.rainyBoat:
-        _paintRainyBoat(canvas, size);
+      case ScenicSceneType.nightRun:
+        _paintNightRunScene(canvas, size);
         break;
     }
   }
 
-  void _paintSunnyDesert(Canvas canvas, Size size) {
+  /// 1. MORNING RUN: Golden sunrise hills + flat-vector cartoon runner in dynamic stride
+  void _paintMorningRunScene(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    final sunCenter = Offset(w * 0.82, h * 0.25);
+    // Concentric glowing morning sun
+    final sunCenter = Offset(w * 0.84, h * 0.26);
     canvas.drawCircle(
       sunCenter,
-      w * 0.18,
+      w * 0.16,
       Paint()..color = Colors.white.withValues(alpha: 0.16),
     );
     canvas.drawCircle(
       sunCenter,
-      w * 0.12,
+      w * 0.10,
       Paint()..color = Colors.white.withValues(alpha: 0.30),
     );
     canvas.drawCircle(
       sunCenter,
-      w * 0.065,
+      w * 0.055,
       Paint()..color = const Color(0xFFFFFBEB),
     );
 
+    // Distant golden hill
     final backDune = Path()
       ..moveTo(0, h * 0.72)
       ..quadraticBezierTo(w * 0.28, h * 0.56, w * 0.62, h * 0.66)
@@ -1683,85 +1710,331 @@ class _ScenicIllustrationPainter extends CustomPainter {
       ..close();
     canvas.drawPath(backDune, Paint()..color = const Color(0xFFF59E0B));
 
+    // Mid warm amber hill
     final midDune = Path()
       ..moveTo(0, h * 0.80)
       ..quadraticBezierTo(w * 0.36, h * 0.68, w * 0.72, h * 0.74)
-      ..quadraticBezierTo(w * 0.90, h * 0.77, w, h * 0.71)
+      ..quadraticBezierTo(w * 0.90, h * 0.77, w, h * 0.70)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
     canvas.drawPath(midDune, Paint()..color = const Color(0xFFD97706));
 
+    // Foreground running path ridge
     final frontDune = Path()
       ..moveTo(0, h * 0.88)
-      ..quadraticBezierTo(w * 0.45, h * 0.77, w, h * 0.84)
+      ..quadraticBezierTo(w * 0.45, h * 0.76, w, h * 0.83)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
     canvas.drawPath(frontDune, Paint()..color = const Color(0xFFB45309));
 
-    final tentBaseY = h * 0.75;
-    final tentCenterX = w * 0.68;
-    final tentW = w * 0.20;
-    final tentH = h * 0.17;
-
-    final tentBody = Path()
-      ..moveTo(tentCenterX - tentW * 0.5, tentBaseY)
-      ..lineTo(tentCenterX - tentW * 0.08, tentBaseY - tentH)
-      ..lineTo(tentCenterX + tentW * 0.52, tentBaseY - tentH * 0.06)
-      ..close();
-    canvas.drawPath(tentBody, Paint()..color = const Color(0xFFFBBF24));
-
-    final tentFront = Path()
-      ..moveTo(tentCenterX - tentW * 0.5, tentBaseY)
-      ..lineTo(tentCenterX - tentW * 0.08, tentBaseY - tentH)
-      ..lineTo(tentCenterX + tentW * 0.06, tentBaseY)
-      ..close();
-    canvas.drawPath(tentFront, Paint()..color = const Color(0xFF92400E));
-
-    final tentDoor = Path()
-      ..moveTo(tentCenterX - tentW * 0.28, tentBaseY)
-      ..lineTo(tentCenterX - tentW * 0.08, tentBaseY - tentH * 0.75)
-      ..lineTo(tentCenterX - tentW * 0.02, tentBaseY)
-      ..close();
-    canvas.drawPath(tentDoor, Paint()..color = const Color(0xFF451A03));
+    if (showCartoonCharacter) {
+      _drawCartoonRunner(
+        canvas,
+        anchor: Offset(w * 0.76, h * 0.78),
+        scale: h * 0.0052,
+        shirtColor: const Color(0xFF78350F),
+        shortsColor: const Color(0xFF451A03),
+        skinColor: const Color(0xFFFDE68A),
+        accentColor: Colors.white,
+      );
+    }
   }
 
-  void _paintCloudyMountain(Canvas canvas, Size size) {
+  /// Helper: Draws a stylized flat-vector cartoon person running in full stride
+  void _drawCartoonRunner(
+    Canvas canvas, {
+    required Offset anchor,
+    required double scale,
+    required Color shirtColor,
+    required Color shortsColor,
+    required Color skinColor,
+    required Color accentColor,
+  }) {
+    final s = scale;
+    final cx = anchor.dx;
+    final cy = anchor.dy; // Ground contact level
+
+    // Soft ground shadow under runner
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx, cy + 4 * s),
+        width: 44 * s,
+        height: 7 * s,
+      ),
+      Paint()..color = Colors.black.withValues(alpha: 0.18),
+    );
+
+    final limbPaint = Paint()
+      ..color = skinColor
+      ..strokeWidth = 5.5 * s
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    // Back leg (kicking back)
+    final backLeg = Path()
+      ..moveTo(cx - 2 * s, cy - 30 * s)
+      ..lineTo(cx - 14 * s, cy - 16 * s)
+      ..lineTo(cx - 25 * s, cy - 20 * s);
+    canvas.drawPath(backLeg, limbPaint);
+
+    // Front leg (striding forward)
+    final frontLeg = Path()
+      ..moveTo(cx + 3 * s, cy - 30 * s)
+      ..lineTo(cx + 16 * s, cy - 16 * s)
+      ..lineTo(cx + 12 * s, cy - 2 * s);
+    canvas.drawPath(frontLeg, limbPaint);
+
+    // Crisp white running shoes
+    final shoePaint = Paint()..color = accentColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(cx + 15 * s, cy - 1 * s),
+          width: 11 * s,
+          height: 5 * s,
+        ),
+        Radius.circular(3 * s),
+      ),
+      shoePaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(cx - 26 * s, cy - 18 * s),
+          width: 10 * s,
+          height: 5 * s,
+        ),
+        Radius.circular(3 * s),
+      ),
+      shoePaint,
+    );
+
+    // Running shorts
+    final shortsPath = Path()
+      ..moveTo(cx - 8 * s, cy - 36 * s)
+      ..lineTo(cx + 8 * s, cy - 35 * s)
+      ..lineTo(cx + 12 * s, cy - 24 * s)
+      ..lineTo(cx - 11 * s, cy - 25 * s)
+      ..close();
+    canvas.drawPath(shortsPath, Paint()..color = shortsColor);
+
+    // Back arm (swinging back)
+    final backArm = Path()
+      ..moveTo(cx, cy - 52 * s)
+      ..lineTo(cx - 14 * s, cy - 44 * s)
+      ..lineTo(cx - 8 * s, cy - 35 * s);
+    canvas.drawPath(backArm, limbPaint..strokeWidth = 4.8 * s);
+
+    // Torso (athletic shirt leaning slightly forward)
+    final torsoPath = Path()
+      ..moveTo(cx - 6 * s, cy - 56 * s)
+      ..lineTo(cx + 9 * s, cy - 55 * s)
+      ..lineTo(cx + 7 * s, cy - 34 * s)
+      ..lineTo(cx - 8 * s, cy - 35 * s)
+      ..close();
+    canvas.drawPath(torsoPath, Paint()..color = shirtColor);
+
+    // Front arm (pumping forward)
+    final frontArm = Path()
+      ..moveTo(cx + 5 * s, cy - 52 * s)
+      ..lineTo(cx + 15 * s, cy - 42 * s)
+      ..lineTo(cx + 23 * s, cy - 50 * s);
+    canvas.drawPath(frontArm, limbPaint);
+
+    // Head
+    final headCenter = Offset(cx + 5 * s, cy - 66 * s);
+    canvas.drawCircle(headCenter, 8.5 * s, Paint()..color = skinColor);
+
+    // Stylized hair / cap
+    final hairPath = Path()
+      ..addArc(
+        Rect.fromCircle(center: headCenter, radius: 9 * s),
+        math.pi * 0.95,
+        math.pi * 1.15,
+      );
+    canvas.drawPath(hairPath, Paint()..color = shortsColor);
+
+    // Sporty headband + trailing ties
+    final bandPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2.6 * s
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      Offset(headCenter.dx - 8 * s, headCenter.dy - 2 * s),
+      Offset(headCenter.dx + 8 * s, headCenter.dy - 2 * s),
+      bandPaint,
+    );
+    canvas.drawLine(
+      Offset(headCenter.dx - 8 * s, headCenter.dy - 2 * s),
+      Offset(headCenter.dx - 16 * s, headCenter.dy),
+      bandPaint,
+    );
+
+    // Motion wind lines behind runner
+    final windPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.65)
+      ..strokeWidth = 1.6 * s
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(cx - 34 * s, cy - 52 * s),
+      Offset(cx - 20 * s, cy - 52 * s),
+      windPaint,
+    );
+    canvas.drawLine(
+      Offset(cx - 38 * s, cy - 40 * s),
+      Offset(cx - 24 * s, cy - 40 * s),
+      windPaint,
+    );
+  }
+
+  /// 2. COFFEE TIME: Warm amber hills + flat-vector cartoon person enjoying steaming coffee
+  void _paintCoffeeTimeScene(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    final sunCenter = Offset(w * 0.65, h * 0.25);
+    // Warm morning sun
     canvas.drawCircle(
-      sunCenter,
-      w * 0.055,
-      Paint()..color = Colors.white.withValues(alpha: 0.92),
+      Offset(w * 0.62, h * 0.24),
+      w * 0.09,
+      Paint()..color = Colors.white.withValues(alpha: 0.22),
+    );
+    canvas.drawCircle(
+      Offset(w * 0.62, h * 0.24),
+      w * 0.05,
+      Paint()..color = const Color(0xFFFFFBEB),
     );
 
-    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
+    // Layered warm latte/terracotta hills
+    final backHill = Path()
+      ..moveTo(0, h * 0.72)
+      ..quadraticBezierTo(w * 0.34, h * 0.58, w * 0.72, h * 0.68)
+      ..quadraticBezierTo(w * 0.88, h * 0.72, w, h * 0.65)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(backHill, Paint()..color = const Color(0xFFD97706));
+
+    final frontHill = Path()
+      ..moveTo(0, h * 0.84)
+      ..quadraticBezierTo(w * 0.45, h * 0.72, w, h * 0.80)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF92400E));
+
+    if (showCartoonCharacter) {
+      final s = h * 0.0052;
+      final cx = w * 0.77;
+      final cy = h * 0.82;
+
+      // Cartoon character sitting/standing with a steaming coffee mug
+      // Head
+      final headCenter = Offset(cx - 6 * s, cy - 58 * s);
+      canvas.drawCircle(
+        headCenter,
+        9.5 * s,
+        Paint()..color = const Color(0xFFFDE68A),
+      );
+      // Cozy hair
+      canvas.drawArc(
+        Rect.fromCircle(center: headCenter, radius: 10 * s),
+        math.pi * 0.9,
+        math.pi * 1.25,
+        true,
+        Paint()..color = const Color(0xFF451A03),
+      );
+
+      // Cozy sweater torso
+      final torso = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(cx - 6 * s, cy - 30 * s),
+          width: 24 * s,
+          height: 34 * s,
+        ),
+        Radius.circular(10 * s),
+      );
+      canvas.drawRRect(torso, Paint()..color = const Color(0xFF78350F));
+
+      // Arm raised holding the coffee cup
+      final armPaint = Paint()
+        ..color = const Color(0xFFFDE68A)
+        ..strokeWidth = 5.2 * s
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+      final armPath = Path()
+        ..moveTo(cx - 2 * s, cy - 40 * s)
+        ..lineTo(cx + 10 * s, cy - 34 * s)
+        ..lineTo(cx + 18 * s, cy - 45 * s);
+      canvas.drawPath(armPath, armPaint);
+
+      // Iconic White Coffee Mug + Handle
+      final mugCenter = Offset(cx + 22 * s, cy - 48 * s);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: mugCenter, width: 13 * s, height: 15 * s),
+          Radius.circular(3 * s),
+        ),
+        Paint()..color = Colors.white,
+      );
+      // Mug handle
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: Offset(mugCenter.dx + 6.5 * s, mugCenter.dy),
+          width: 7 * s,
+          height: 9 * s,
+        ),
+        -math.pi / 2,
+        math.pi,
+        false,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.2 * s,
+      );
+
+      // Rising white steam curls above coffee mug
+      final steamPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8 * s
+        ..strokeCap = StrokeCap.round;
+      for (int i = -1; i <= 1; i += 2) {
+        final sx = mugCenter.dx + i * 3.0 * s;
+        final sy = mugCenter.dy - 10 * s;
+        final steam = Path()
+          ..moveTo(sx, sy)
+          ..quadraticBezierTo(sx - 3 * s, sy - 6 * s, sx + 1 * s, sy - 11 * s)
+          ..quadraticBezierTo(sx + 4 * s, sy - 16 * s, sx, sy - 21 * s);
+        canvas.drawPath(steam, steamPaint);
+      }
+    }
+  }
+
+  /// 3. DEEP STUDY & CODING: Sky-blue mountains + cartoon person with headphones & laptop
+  void _paintDeepStudyScene(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Soft clouds
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.60);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
-          center: Offset(w * 0.72, h * 0.28),
-          width: w * 0.18,
-          height: h * 0.032,
+          center: Offset(w * 0.62, h * 0.25),
+          width: w * 0.16,
+          height: h * 0.03,
         ),
         const Radius.circular(20),
       ),
       cloudPaint,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(w * 0.56, h * 0.36),
-          width: w * 0.15,
-          height: h * 0.026,
-        ),
-        const Radius.circular(20),
-      ),
-      cloudPaint,
-    );
 
+    // Layered sky-blue mountains
     final farMountain = Path()
       ..moveTo(0, h * 0.75)
       ..lineTo(w * 0.24, h * 0.52)
@@ -1771,61 +2044,102 @@ class _ScenicIllustrationPainter extends CustomPainter {
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(farMountain, Paint()..color = const Color(0xFF7DD3FC));
-
-    final midMountain = Path()
-      ..moveTo(0, h * 0.78)
-      ..quadraticBezierTo(w * 0.32, h * 0.62, w * 0.68, h * 0.74)
-      ..quadraticBezierTo(w * 0.86, h * 0.80, w, h * 0.72)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(midMountain, Paint()..color = const Color(0xFF60A5FA));
+    canvas.drawPath(farMountain, Paint()..color = const Color(0xFF60A5FA));
 
     final frontHill = Path()
-      ..moveTo(0, h * 0.88)
-      ..quadraticBezierTo(w * 0.45, h * 0.76, w, h * 0.85)
+      ..moveTo(0, h * 0.86)
+      ..quadraticBezierTo(w * 0.45, h * 0.74, w, h * 0.82)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF3B82F6));
+    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF2563EB));
 
-    _drawBirchTrunk(canvas, w * 0.79, h, w * 0.024);
-    _drawBirchTrunk(canvas, w * 0.89, h, w * 0.018);
-  }
+    if (showCartoonCharacter) {
+      final s = h * 0.0052;
+      final cx = w * 0.78;
+      final cy = h * 0.84;
 
-  void _drawBirchTrunk(Canvas canvas, double x, double h, double trunkW) {
-    final trunkPaint = Paint()..color = const Color(0xFFE0F2FE);
-    canvas.drawRect(Rect.fromLTWH(x, 0, trunkW, h), trunkPaint);
-
-    final branchPaint = Paint()
-      ..color = const Color(0xFFE0F2FE)
-      ..strokeWidth = trunkW * 0.45
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(x, h * 0.32),
-      Offset(x - trunkW * 2.2, h * 0.24),
-      branchPaint,
-    );
-    canvas.drawLine(
-      Offset(x + trunkW, h * 0.48),
-      Offset(x + trunkW * 2.8, h * 0.40),
-      branchPaint,
-    );
-
-    final barkPaint = Paint()
-      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.55)
-      ..strokeWidth = 1.4;
-    for (final ratio in [0.22, 0.38, 0.55, 0.70, 0.82]) {
-      canvas.drawLine(
-        Offset(x + 1, h * ratio),
-        Offset(x + trunkW * 0.65, h * ratio),
-        barkPaint,
+      // Cartoon student/developer with headphones & open laptop
+      final headCenter = Offset(cx - 10 * s, cy - 56 * s);
+      canvas.drawCircle(
+        headCenter,
+        9 * s,
+        Paint()..color = const Color(0xFFE0F2FE),
       );
+
+      // Over-ear wireless headphones arc + earcups
+      canvas.drawArc(
+        Rect.fromCircle(center: headCenter, radius: 10.5 * s),
+        math.pi * 1.05,
+        math.pi * 0.9,
+        false,
+        Paint()
+          ..color = const Color(0xFF1E3A8A)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.8 * s,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: Offset(headCenter.dx - 2 * s, headCenter.dy + 1 * s),
+            width: 5 * s,
+            height: 8 * s,
+          ),
+          Radius.circular(2.5 * s),
+        ),
+        Paint()..color = Colors.white,
+      );
+
+      // Torso leaning slightly toward laptop
+      final torso = Path()
+        ..moveTo(cx - 20 * s, cy - 44 * s)
+        ..lineTo(cx - 2 * s, cy - 44 * s)
+        ..lineTo(cx + 2 * s, cy - 16 * s)
+        ..lineTo(cx - 22 * s, cy - 16 * s)
+        ..close();
+      canvas.drawPath(torso, Paint()..color = const Color(0xFF1E3A8A));
+
+      // Arm reaching to keyboard
+      canvas.drawLine(
+        Offset(cx - 6 * s, cy - 36 * s),
+        Offset(cx + 12 * s, cy - 24 * s),
+        Paint()
+          ..color = const Color(0xFFE0F2FE)
+          ..strokeWidth = 5 * s
+          ..strokeCap = StrokeCap.round,
+      );
+
+      // Glowing Open Laptop on right
+      final laptopBase = Offset(cx + 8 * s, cy - 22 * s);
+      // Soft screen glow cone
+      final glowPath = Path()
+        ..moveTo(laptopBase.dx + 16 * s, laptopBase.dy)
+        ..lineTo(laptopBase.dx + 22 * s, laptopBase.dy - 22 * s)
+        ..lineTo(headCenter.dx + 4 * s, headCenter.dy - 6 * s)
+        ..lineTo(laptopBase.dx, laptopBase.dy)
+        ..close();
+      canvas.drawPath(
+        glowPath,
+        Paint()..color = Colors.white.withValues(alpha: 0.22),
+      );
+
+      // Laptop keyboard base + angled lid
+      final laptopPaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 3.2 * s
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+      final laptopPath = Path()
+        ..moveTo(laptopBase.dx, laptopBase.dy)
+        ..lineTo(laptopBase.dx + 16 * s, laptopBase.dy)
+        ..lineTo(laptopBase.dx + 22 * s, laptopBase.dy - 20 * s);
+      canvas.drawPath(laptopPath, laptopPaint);
     }
   }
 
-  void _paintWindyWindmill(Canvas canvas, Size size) {
+  /// 4. WORKOUT / GYM: Meadow green hills + cartoon athlete lifting dumbbells overhead
+  void _paintWorkoutGymScene(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
@@ -1836,416 +2150,294 @@ class _ScenicIllustrationPainter extends CustomPainter {
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(backHill, Paint()..color = const Color(0xFF9BC56D));
-
-    final midHill = Path()
-      ..moveTo(0, h * 0.78)
-      ..quadraticBezierTo(w * 0.42, h * 0.66, w, h * 0.74)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(midHill, Paint()..color = const Color(0xFF82B352));
+    canvas.drawPath(backHill, Paint()..color = const Color(0xFF82B352));
 
     final frontHill = Path()
-      ..moveTo(0, h * 0.88)
-      ..quadraticBezierTo(w * 0.48, h * 0.77, w, h * 0.86)
+      ..moveTo(0, h * 0.84)
+      ..quadraticBezierTo(w * 0.48, h * 0.72, w, h * 0.80)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF689B3B));
+    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF4D7C2B));
 
-    _drawPineTree(
-      canvas,
-      Offset(w * 0.56, h * 0.74),
-      w * 0.036,
-      h * 0.08,
-      const Color(0xFF4D7C2B),
-    );
+    if (showCartoonCharacter) {
+      final s = h * 0.0052;
+      final cx = w * 0.78;
+      final cy = h * 0.80;
 
-    final millX = w * 0.80;
-    final millBaseY = h * 0.78;
-    final millW = w * 0.12;
-    final millH = h * 0.34;
-
-    final towerPath = Path()
-      ..moveTo(millX - millW * 0.48, millBaseY)
-      ..lineTo(millX - millW * 0.28, millBaseY - millH)
-      ..lineTo(millX + millW * 0.28, millBaseY - millH)
-      ..lineTo(millX + millW * 0.48, millBaseY)
-      ..close();
-    canvas.drawPath(towerPath, Paint()..color = const Color(0xFF558B2F));
-
-    canvas.drawArc(
-      Rect.fromCenter(
-        center: Offset(millX, millBaseY - millH),
-        width: millW * 0.62,
-        height: millH * 0.32,
-      ),
-      math.pi,
-      math.pi,
-      true,
-      Paint()..color = const Color(0xFF33691E),
-    );
-
-    final hub = Offset(millX, millBaseY - millH * 0.92);
-    final bladeLen = w * 0.18;
-    final bladePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.92)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    for (int i = 0; i < 4; i++) {
-      final angle = (math.pi / 4) + i * (math.pi / 2);
-      final tip = Offset(
-        hub.dx + math.cos(angle) * bladeLen,
-        hub.dy + math.sin(angle) * bladeLen,
+      // Cartoon athlete pressing a barbell/dumbbells overhead
+      // Legs planted strong
+      final legPaint = Paint()
+        ..color = const Color(0xFF1E293B)
+        ..strokeWidth = 5.5 * s
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(cx - 5 * s, cy - 26 * s),
+        Offset(cx - 10 * s, cy),
+        legPaint,
       );
-      canvas.drawLine(hub, tip, bladePaint);
+      canvas.drawLine(
+        Offset(cx + 5 * s, cy - 26 * s),
+        Offset(cx + 10 * s, cy),
+        legPaint,
+      );
 
-      final perp = angle + math.pi / 2;
-      final sailW = w * 0.028;
-      final p1 = Offset(
-        hub.dx + math.cos(angle) * (bladeLen * 0.22),
-        hub.dy + math.sin(angle) * (bladeLen * 0.22),
+      // Athletic tank torso
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: Offset(cx, cy - 38 * s),
+            width: 18 * s,
+            height: 26 * s,
+          ),
+          Radius.circular(6 * s),
+        ),
+        Paint()..color = const Color(0xFFECFCCB),
       );
-      final p2 = tip;
-      final p3 = Offset(
-        tip.dx + math.cos(perp) * sailW,
-        tip.dy + math.sin(perp) * sailW,
+
+      // Head
+      canvas.drawCircle(
+        Offset(cx, cy - 58 * s),
+        8 * s,
+        Paint()..color = const Color(0xFFFEF08A),
       );
-      final p4 = Offset(
-        p1.dx + math.cos(perp) * sailW,
-        p1.dy + math.sin(perp) * sailW,
+
+      // Both arms raised pressing dumbbells overhead
+      final armPaint = Paint()
+        ..color = const Color(0xFFFEF08A)
+        ..strokeWidth = 4.6 * s
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      final arms = Path()
+        ..moveTo(cx - 8 * s, cy - 48 * s)
+        ..lineTo(cx - 16 * s, cy - 60 * s)
+        ..lineTo(cx - 14 * s, cy - 74 * s)
+        ..moveTo(cx + 8 * s, cy - 48 * s)
+        ..lineTo(cx + 16 * s, cy - 60 * s)
+        ..lineTo(cx + 14 * s, cy - 74 * s);
+      canvas.drawPath(arms, armPaint);
+
+      // Overhead Barbell / Dumbbells
+      canvas.drawLine(
+        Offset(cx - 24 * s, cy - 74 * s),
+        Offset(cx + 24 * s, cy - 74 * s),
+        Paint()
+          ..color = Colors.white
+          ..strokeWidth = 2.6 * s,
       );
-      final sailPath = Path()
-        ..moveTo(p1.dx, p1.dy)
-        ..lineTo(p2.dx, p2.dy)
-        ..lineTo(p3.dx, p3.dy)
-        ..lineTo(p4.dx, p4.dy)
-        ..close();
-      canvas.drawPath(
-        sailPath,
-        Paint()..color = Colors.white.withValues(alpha: 0.72),
-      );
-      canvas.drawPath(sailPath, bladePaint..strokeWidth = 1.0);
+      final platePaint = Paint()..color = const Color(0xFF1E293B);
+      for (final px in [-21.0, -17.0, 17.0, 21.0]) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: Offset(cx + px * s, cy - 74 * s),
+              width: 3.2 * s,
+              height: 12 * s,
+            ),
+            Radius.circular(1.5 * s),
+          ),
+          platePaint,
+        );
+      }
     }
-    canvas.drawCircle(hub, 2.5, Paint()..color = const Color(0xFF33691E));
   }
 
-  void _drawPineTree(
-    Canvas canvas,
-    Offset baseCenter,
-    double width,
-    double height,
-    Color color,
-  ) {
-    final path = Path()
-      ..moveTo(baseCenter.dx, baseCenter.dy - height)
-      ..lineTo(baseCenter.dx - width / 2, baseCenter.dy)
-      ..lineTo(baseCenter.dx + width / 2, baseCenter.dy)
-      ..close();
-    canvas.drawPath(path, Paint()..color = color);
-  }
-
-  void _paintFogLighthouse(Canvas canvas, Size size) {
+  /// 5. EVENING READING: Lavender twilight + cartoon person reading a book by a glowing lamp
+  void _paintEveningReadingScene(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    canvas.drawCircle(
-      Offset(w * 0.64, h * 0.30),
-      w * 0.045,
-      Paint()..color = Colors.white.withValues(alpha: 0.90),
-    );
+    // Twinkling stars
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    for (final pt in [
+      Offset(w * 0.54, h * 0.18),
+      Offset(w * 0.68, h * 0.14),
+      Offset(w * 0.86, h * 0.20),
+      Offset(w * 0.62, h * 0.32),
+    ]) {
+      canvas.drawCircle(pt, 1.8, starPaint);
+    }
 
-    _drawBird(canvas, Offset(w * 0.54, h * 0.40), w * 0.028);
-    _drawBird(canvas, Offset(w * 0.61, h * 0.46), w * 0.022);
-
-    final farMist = Path()
+    final backHill = Path()
       ..moveTo(0, h * 0.72)
-      ..quadraticBezierTo(w * 0.35, h * 0.60, w * 0.72, h * 0.68)
-      ..quadraticBezierTo(w * 0.88, h * 0.72, w, h * 0.66)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(farMist, Paint()..color = const Color(0xFFB0C1D4));
-
-    final midMist = Path()
-      ..moveTo(0, h * 0.82)
-      ..quadraticBezierTo(w * 0.45, h * 0.70, w, h * 0.77)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(midMist, Paint()..color = const Color(0xFF8FA6BE));
-
-    final frontCliff = Path()
-      ..moveTo(0, h * 0.90)
-      ..quadraticBezierTo(w * 0.52, h * 0.78, w, h * 0.84)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(frontCliff, Paint()..color = const Color(0xFF728CA8));
-
-    final lhX = w * 0.82;
-    final lhBaseY = h * 0.82;
-    final lhW = w * 0.10;
-    final lhH = h * 0.42;
-
-    final towerPath = Path()
-      ..moveTo(lhX - lhW * 0.48, lhBaseY)
-      ..lineTo(lhX - lhW * 0.30, lhBaseY - lhH)
-      ..lineTo(lhX + lhW * 0.30, lhBaseY - lhH)
-      ..lineTo(lhX + lhW * 0.48, lhBaseY)
-      ..close();
-
-    canvas.save();
-    canvas.clipPath(towerPath);
-    canvas.drawPath(towerPath, Paint()..color = Colors.white);
-    final stripePaint = Paint()..color = const Color(0xFF526D88);
-    canvas.drawRect(
-      Rect.fromLTWH(lhX - lhW, lhBaseY - lhH * 0.82, lhW * 2, lhH * 0.22),
-      stripePaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(lhX - lhW, lhBaseY - lhH * 0.38, lhW * 2, lhH * 0.22),
-      stripePaint,
-    );
-    canvas.restore();
-
-    canvas.drawRect(
-      Rect.fromCenter(
-        center: Offset(lhX, lhBaseY - lhH - lhH * 0.08),
-        width: lhW * 0.48,
-        height: lhH * 0.14,
-      ),
-      Paint()..color = const Color(0xFFFEF08A),
-    );
-
-    final roofPath = Path()
-      ..moveTo(lhX - lhW * 0.36, lhBaseY - lhH - lhH * 0.15)
-      ..lineTo(lhX, lhBaseY - lhH - lhH * 0.28)
-      ..lineTo(lhX + lhW * 0.36, lhBaseY - lhH - lhH * 0.15)
-      ..close();
-    canvas.drawPath(roofPath, Paint()..color = const Color(0xFF3E566E));
-  }
-
-  void _drawBird(Canvas canvas, Offset center, double span) {
-    final path = Path()
-      ..moveTo(center.dx - span, center.dy)
-      ..quadraticBezierTo(
-        center.dx - span * 0.4,
-        center.dy - span * 0.5,
-        center.dx,
-        center.dy,
-      )
-      ..quadraticBezierTo(
-        center.dx + span * 0.4,
-        center.dy - span * 0.5,
-        center.dx + span,
-        center.dy,
-      );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFF64748B)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.3
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  void _paintSnowCabin(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final snowPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
-    final flakes = [
-      Offset(w * 0.52, h * 0.18),
-      Offset(w * 0.66, h * 0.14),
-      Offset(w * 0.82, h * 0.22),
-      Offset(w * 0.58, h * 0.34),
-      Offset(w * 0.74, h * 0.32),
-      Offset(w * 0.88, h * 0.40),
-    ];
-    for (int i = 0; i < flakes.length; i++) {
-      canvas.drawCircle(flakes[i], i.isEven ? 2.2 : 1.5, snowPaint);
-    }
-
-    final backSnow = Path()
-      ..moveTo(0, h * 0.70)
-      ..quadraticBezierTo(w * 0.38, h * 0.58, w * 0.76, h * 0.68)
+      ..quadraticBezierTo(w * 0.38, h * 0.60, w * 0.76, h * 0.68)
       ..quadraticBezierTo(w * 0.90, h * 0.72, w, h * 0.65)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(backSnow, Paint()..color = const Color(0xFFC7D2FE));
+    canvas.drawPath(backHill, Paint()..color = const Color(0xFF6366F1));
 
-    final midSnow = Path()
-      ..moveTo(0, h * 0.80)
-      ..quadraticBezierTo(w * 0.45, h * 0.68, w, h * 0.76)
+    final frontHill = Path()
+      ..moveTo(0, h * 0.84)
+      ..quadraticBezierTo(w * 0.50, h * 0.74, w, h * 0.82)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(midSnow, Paint()..color = const Color(0xFFDDE4FF));
+    canvas.drawPath(frontHill, Paint()..color = const Color(0xFF4338CA));
 
-    final frontSnow = Path()
-      ..moveTo(0, h * 0.88)
-      ..quadraticBezierTo(w * 0.50, h * 0.78, w, h * 0.86)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(frontSnow, Paint()..color = const Color(0xFFEEF2FF));
+    if (showCartoonCharacter) {
+      final s = h * 0.0052;
+      final cx = w * 0.76;
+      final cy = h * 0.82;
 
-    final cabX = w * 0.77;
-    final cabBaseY = h * 0.80;
-    final cabW = w * 0.22;
-    final cabH = h * 0.16;
+      // Standing Floor Lamp on the right casting a warm golden light cone
+      final lampX = cx + 22 * s;
+      final lightCone = Path()
+        ..moveTo(lampX - 4 * s, cy - 68 * s)
+        ..lineTo(lampX + 4 * s, cy - 68 * s)
+        ..lineTo(cx + 30 * s, cy)
+        ..lineTo(cx - 24 * s, cy)
+        ..close();
+      canvas.drawPath(
+        lightCone,
+        Paint()..color = const Color(0xFFFEF08A).withValues(alpha: 0.22),
+      );
 
-    canvas.drawRect(
-      Rect.fromLTWH(cabX - cabW / 2, cabBaseY - cabH, cabW, cabH),
-      Paint()..color = const Color(0xFF6366F1),
-    );
+      // Lamp post & shade
+      canvas.drawLine(
+        Offset(lampX, cy),
+        Offset(lampX, cy - 68 * s),
+        Paint()
+          ..color = const Color(0xFFE0E7FF)
+          ..strokeWidth = 2.2 * s,
+      );
+      final shadePath = Path()
+        ..moveTo(lampX - 8 * s, cy - 64 * s)
+        ..lineTo(lampX - 4 * s, cy - 74 * s)
+        ..lineTo(lampX + 4 * s, cy - 74 * s)
+        ..lineTo(lampX + 8 * s, cy - 64 * s)
+        ..close();
+      canvas.drawPath(shadePath, Paint()..color = const Color(0xFFFDE047));
 
-    final gablePath = Path()
-      ..moveTo(cabX - cabW / 2, cabBaseY - cabH)
-      ..lineTo(cabX, cabBaseY - cabH * 1.65)
-      ..lineTo(cabX + cabW / 2, cabBaseY - cabH)
-      ..close();
-    canvas.drawPath(gablePath, Paint()..color = const Color(0xFF4F46E5));
-
-    final snowRoof = Path()
-      ..moveTo(cabX - cabW * 0.58, cabBaseY - cabH * 0.94)
-      ..lineTo(cabX, cabBaseY - cabH * 1.72)
-      ..lineTo(cabX + cabW * 0.58, cabBaseY - cabH * 0.94);
-    canvas.drawPath(
-      snowRoof,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.0
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-
-    final winPaint = Paint()..color = const Color(0xFFFDE047);
-    final winW = cabW * 0.20;
-    final winH = cabH * 0.42;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(cabX - cabW * 0.18, cabBaseY - cabH * 0.48),
-          width: winW,
-          height: winH,
+      // Cartoon person sitting & reading an open book
+      final headCenter = Offset(cx - 6 * s, cy - 48 * s);
+      canvas.drawCircle(
+        headCenter,
+        8.5 * s,
+        Paint()..color = const Color(0xFFE0E7FF),
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: Offset(cx - 6 * s, cy - 24 * s),
+            width: 20 * s,
+            height: 28 * s,
+          ),
+          Radius.circular(8 * s),
         ),
-        const Radius.circular(2),
-      ),
-      winPaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(cabX + cabW * 0.18, cabBaseY - cabH * 0.48),
-          width: winW,
-          height: winH,
+        Paint()..color = const Color(0xFF312E81),
+      );
+
+      // Open white book held in front
+      final bookPath = Path()
+        ..moveTo(cx + 2 * s, cy - 34 * s)
+        ..lineTo(cx + 14 * s, cy - 38 * s)
+        ..lineTo(cx + 14 * s, cy - 22 * s)
+        ..lineTo(cx + 2 * s, cy - 18 * s)
+        ..close();
+      canvas.drawPath(bookPath, Paint()..color = Colors.white);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: Offset(cx + 6 * s, cy - 28 * s),
+            width: 12 * s,
+            height: 14 * s,
+          ),
+          Radius.circular(2 * s),
         ),
-        const Radius.circular(2),
-      ),
-      winPaint,
-    );
+        Paint()..color = const Color(0xFFFEF08A),
+      );
+    }
   }
 
-  void _paintRainyBoat(Canvas canvas, Size size) {
+  /// 6. NIGHT RUN: Slate-indigo night sky + glowing streetlamp + cartoon runner at night
+  void _paintNightRunScene(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
+    // Crescent Moon & Stars
+    final moonCenter = Offset(w * 0.60, h * 0.22);
+    canvas.drawCircle(
+      moonCenter,
+      w * 0.045,
+      Paint()..color = const Color(0xFFFEF08A),
+    );
+    canvas.drawCircle(
+      Offset(moonCenter.dx + w * 0.018, moonCenter.dy - w * 0.01),
+      w * 0.04,
+      Paint()..color = skyGradient.first,
+    );
+
+    // Distant night hills
     final mountains = Path()
-      ..moveTo(0, h * 0.65)
-      ..quadraticBezierTo(w * 0.25, h * 0.48, w * 0.55, h * 0.60)
-      ..quadraticBezierTo(w * 0.80, h * 0.50, w, h * 0.58)
+      ..moveTo(0, h * 0.68)
+      ..quadraticBezierTo(w * 0.28, h * 0.52, w * 0.58, h * 0.64)
+      ..quadraticBezierTo(w * 0.82, h * 0.54, w, h * 0.62)
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(mountains, Paint()..color = const Color(0xFF334155));
+    canvas.drawPath(mountains, Paint()..color = const Color(0xFF1E293B));
 
+    // Foreground night running path
     canvas.drawRect(
-      Rect.fromLTWH(0, h * 0.62, w, h * 0.38),
-      Paint()..color = const Color(0xFF3B495E),
+      Rect.fromLTWH(0, h * 0.74, w, h * 0.26),
+      Paint()..color = const Color(0xFF0F172A),
     );
 
-    final rainPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.22)
-      ..strokeWidth = 1.0
-      ..strokeCap = StrokeCap.round;
-    final rainSeeds = [
-      Offset(w * 0.52, h * 0.16),
-      Offset(w * 0.62, h * 0.24),
-      Offset(w * 0.74, h * 0.14),
-      Offset(w * 0.84, h * 0.26),
-      Offset(w * 0.68, h * 0.42),
-    ];
-    for (final pt in rainSeeds) {
-      canvas.drawLine(pt, Offset(pt.dx - 5, pt.dy + 12), rainPaint);
+    if (showCartoonCharacter) {
+      final s = h * 0.0048;
+      final lampX = w * 0.86;
+      final groundY = h * 0.82;
+
+      // Warm golden streetlamp light cone illuminating the night runner
+      final conePath = Path()
+        ..moveTo(lampX - 10 * s, groundY - 82 * s)
+        ..lineTo(lampX - 2 * s, groundY - 82 * s)
+        ..lineTo(w * 0.96, groundY + 6 * s)
+        ..lineTo(w * 0.60, groundY + 6 * s)
+        ..close();
+      canvas.drawPath(
+        conePath,
+        Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.18),
+      );
+
+      // Streetlamp pole & glowing lantern head
+      final polePaint = Paint()
+        ..color = const Color(0xFF94A3B8)
+        ..strokeWidth = 2.4 * s
+        ..style = PaintingStyle.stroke;
+      final polePath = Path()
+        ..moveTo(lampX, groundY)
+        ..lineTo(lampX, groundY - 76 * s)
+        ..quadraticBezierTo(
+          lampX,
+          groundY - 84 * s,
+          lampX - 8 * s,
+          groundY - 84 * s,
+        );
+      canvas.drawPath(polePath, polePaint);
+      canvas.drawCircle(
+        Offset(lampX - 8 * s, groundY - 82 * s),
+        4.5 * s,
+        Paint()..color = const Color(0xFFFEF08A),
+      );
+
+      // Cartoon night runner under the streetlamp glow
+      _drawCartoonRunner(
+        canvas,
+        anchor: Offset(w * 0.74, groundY),
+        scale: s,
+        shirtColor: const Color(0xFF38BDF8),
+        shortsColor: const Color(0xFF0284C7),
+        skinColor: const Color(0xFFFEF08A),
+        accentColor: Colors.white,
+      );
     }
-
-    _drawFloatingLantern(canvas, Offset(w * 0.48, h * 0.78), w * 0.022);
-    _drawFloatingLantern(canvas, Offset(w * 0.60, h * 0.86), w * 0.028);
-
-    final boatX = w * 0.82;
-    final boatY = h * 0.77;
-    final boatW = w * 0.26;
-    final boatH = h * 0.09;
-
-    final hullPath = Path()
-      ..moveTo(boatX - boatW * 0.52, boatY - boatH * 0.4)
-      ..lineTo(boatX + boatW * 0.52, boatY - boatH * 0.4)
-      ..quadraticBezierTo(
-        boatX + boatW * 0.38,
-        boatY + boatH * 0.6,
-        boatX,
-        boatY + boatH * 0.6,
-      )
-      ..quadraticBezierTo(
-        boatX - boatW * 0.38,
-        boatY + boatH * 0.6,
-        boatX - boatW * 0.52,
-        boatY - boatH * 0.4,
-      )
-      ..close();
-    canvas.drawPath(hullPath, Paint()..color = const Color(0xFF1E293B));
-
-    _drawFloatingLantern(
-      canvas,
-      Offset(boatX - boatW * 0.12, boatY - boatH * 0.55),
-      w * 0.026,
-    );
-  }
-
-  void _drawFloatingLantern(Canvas canvas, Offset pos, double size) {
-    canvas.drawCircle(
-      pos,
-      size * 2.2,
-      Paint()
-        ..color = const Color(0xFFFACC15).withValues(alpha: 0.24)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(pos.dx, pos.dy + size * 0.9),
-        width: size * 1.6,
-        height: size * 0.35,
-      ),
-      Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.45),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos, width: size, height: size * 1.15),
-        const Radius.circular(2),
-      ),
-      Paint()..color = const Color(0xFFFEF08A),
-    );
   }
 
   @override
   bool shouldRepaint(covariant _ScenicIllustrationPainter oldDelegate) {
-    return oldDelegate.scene != scene;
+    return oldDelegate.scene != scene ||
+        oldDelegate.showCartoonCharacter != showCartoonCharacter;
   }
 }
