@@ -7,6 +7,7 @@ import '../widgets/content_skeleton_loader.dart';
 import '../widgets/lifted_paper_card.dart';
 import '../widgets/analytics_graph_card.dart';
 import '../widgets/pro_plan_card.dart';
+import '../widgets/scenic_cards_sandbox.dart';
 
 class DesignSandboxScreen extends StatefulWidget {
   final TaskProvider provider;
@@ -125,19 +126,21 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildTabButton(0, 'Showcase', borderCol, icon: Icons.auto_awesome_rounded),
+                        _buildTabButton(0, 'Scenic Cards', borderCol, icon: Icons.landscape_rounded),
                         const SizedBox(width: 6),
-                        _buildTabButton(1, 'Paper Card', borderCol, icon: Icons.note_alt_outlined),
+                        _buildTabButton(1, 'All Showcase', borderCol, icon: Icons.auto_awesome_rounded),
                         const SizedBox(width: 6),
-                        _buildTabButton(2, 'Analytics', borderCol, icon: Icons.show_chart_rounded),
+                        _buildTabButton(2, 'Paper Card', borderCol, icon: Icons.note_alt_outlined),
                         const SizedBox(width: 6),
-                        _buildTabButton(3, 'Pro Plan', borderCol, icon: Icons.verified_outlined),
+                        _buildTabButton(3, 'Analytics', borderCol, icon: Icons.show_chart_rounded),
                         const SizedBox(width: 6),
-                        _buildTabButton(4, '3D Mascot', borderCol, icon: Icons.smart_toy_rounded),
+                        _buildTabButton(4, 'Pro Plan', borderCol, icon: Icons.verified_outlined),
                         const SizedBox(width: 6),
-                        _buildTabButton(5, 'Header Lab', borderCol, icon: Icons.wb_twilight_rounded),
+                        _buildTabButton(5, '3D Mascot', borderCol, icon: Icons.smart_toy_rounded),
                         const SizedBox(width: 6),
-                        _buildTabButton(6, 'Skeleton', borderCol, icon: Icons.view_quilt_outlined),
+                        _buildTabButton(6, 'Header Lab', borderCol, icon: Icons.wb_twilight_rounded),
+                        const SizedBox(width: 6),
+                        _buildTabButton(7, 'Skeleton', borderCol, icon: Icons.view_quilt_outlined),
                       ],
                     ),
                   ),
@@ -151,25 +154,37 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_selectedTab == 0) ...[
-                    // Tab 0: All New Sandbox Designs Showcase (Lifted Paper Card, Analytics Graph, Pro Plan, Mascot)
-                    _buildSandboxShowcase(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 0: Dedicated 6 Scenic Cards with Top-Left Corner Curl (designcard.png)
+                    _buildSectionTitle(
+                      title: 'Scenic Illustrated Cards (Top-Left Curl)',
+                      subtitle: 'All 6 scenic cards from designcard.png with realistic 3D top-left corner paper curl.',
+                      icon: Icons.landscape_rounded,
+                      badgeText: 'designcard.png',
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                    const SizedBox(height: 14),
+                    const ScenicCardsSandboxShowcase(),
                   ] else if (_selectedTab == 1) ...[
-                    // Tab 1: Dedicated Lifted Paper Card Deep Dive
-                    _buildLiftedPaperDeepDive(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 1: All New Sandbox Designs Showcase (Scenic Cards, Lifted Paper Card, Analytics Graph, Pro Plan, Mascot)
+                    _buildSandboxShowcase(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 2) ...[
-                    // Tab 2: Dedicated Analytical Bézier Graph Lab
-                    _buildAnalyticsGraphLab(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 2: Dedicated Lifted Paper Card Deep Dive
+                    _buildLiftedPaperDeepDive(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 3) ...[
-                    // Tab 3: Dedicated Pro Plan Subscription Lab
-                    _buildProPlanLab(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 3: Dedicated Analytical Bézier Graph Lab
+                    _buildAnalyticsGraphLab(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 4) ...[
-                    // Tab 4: 3D Chatbot Mascot Showcase
-                    _buildMascotShowcase(cardBg, textPrimary, textSecondary, borderCol),
+                    // Tab 4: Dedicated Pro Plan Subscription Lab
+                    _buildProPlanLab(cardBg, textPrimary, textSecondary, borderCol),
                   ] else if (_selectedTab == 5) ...[
-                    // Tab 5: Atmospheric Header Lab
+                    // Tab 5: 3D Chatbot Mascot Showcase
+                    _buildMascotShowcase(cardBg, textPrimary, textSecondary, borderCol),
+                  ] else if (_selectedTab == 6) ...[
+                    // Tab 6: Atmospheric Header Lab
                     _buildAtmosphericHeaderLab(cardBg, textPrimary, textSecondary, borderCol),
                   ] else ...[
-                    // Tab 6: Facebook-Style Content Skeleton Lab
+                    // Tab 7: Facebook-Style Content Skeleton Lab
                     _buildSkeletonLab(cardBg, textPrimary, textSecondary, borderCol),
                   ],
                   const SizedBox(height: 40),
@@ -304,9 +319,23 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
 
         const SizedBox(height: 28),
 
+        // Section 0: All 6 Scenic Illustrated Cards with Top-Left Corner Curl (designcard.png)
+        _buildSectionTitle(
+          title: '1. Scenic Illustrated Cards (Top-Left Curl)',
+          subtitle: 'All 6 scenic cards from designcard.png with 3D curled top-left corner.',
+          icon: Icons.landscape_rounded,
+          badgeText: 'designcard.png',
+          textPrimary: textPrimary,
+          textSecondary: textSecondary,
+        ),
+        const SizedBox(height: 14),
+        const ScenicCardsSandboxShowcase(),
+
+        const SizedBox(height: 36),
+
         // Section 1: Tactile Lifted Paper Task Card (sanbox/card.png)
         _buildSectionTitle(
-          title: '1. Tactile Lifted Paper Task Card',
+          title: '2. Tactile Lifted Paper Task Card',
           subtitle: 'Upper-left corner lifted with physical ambient drop shadow & curled edge shading.',
           icon: Icons.note_alt_outlined,
           badgeText: 'card.png',

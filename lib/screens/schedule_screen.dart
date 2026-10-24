@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/task_model.dart';
 import '../state/task_provider.dart';
 import '../widgets/task_card.dart';
-import '../widgets/analytics_graph_card.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final TaskProvider provider;
@@ -160,19 +159,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Task Schedule',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: widget.provider.activeAtmosphereIndex == 2 ? Colors.white : const Color(0xFF1E293B),
+                  color: Color(0xFF1E293B),
                 ),
               ),
               IconButton(
-                icon: Icon(
-                  Icons.sync_rounded,
-                  color: widget.provider.activeAtmosphereIndex == 2 ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                ),
+                icon: const Icon(Icons.sync_rounded, color: Color(0xFF64748B)),
                 tooltip: 'Refresh Timeline',
                 onPressed: () {
                   widget.provider.resetToThisWeekRoutine();
@@ -182,14 +178,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ],
           ),
 
-          const SizedBox(height: 14),
-
-          // High-End Bézier Curve Analytics Card (directly from sanbox/graph.png!)
-          AnalyticsGraphCard(
-            isNight: widget.provider.activeAtmosphereIndex == 2,
-          ),
-
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           // 3. Days Strip (All, Mon 12, Tue 13, etc.)
           SizedBox(
