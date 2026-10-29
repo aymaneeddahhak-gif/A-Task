@@ -623,11 +623,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildFreshEmptyState(context, provider)
               else
                 ...tasks.map(
-                  (task) => TaskCard(
-                    task: task,
-                    onTap: () => provider.openTaskDetail(task),
-                    onToggleComplete: () => provider.toggleTaskComplete(task.id),
-                    onToggleStarred: () => provider.toggleTaskStarred(task.id),
+                  (task) => RepaintBoundary(
+                    key: ValueKey('home_task_${task.id}'),
+                    child: TaskCard(
+                      task: task,
+                      onTap: () => provider.openTaskDetail(task),
+                      onToggleComplete: () => provider.toggleTaskComplete(task.id),
+                      onToggleStarred: () => provider.toggleTaskStarred(task.id),
+                    ),
                   ),
                 ),
 

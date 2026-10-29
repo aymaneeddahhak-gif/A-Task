@@ -10,7 +10,7 @@ class TaskCardTheme {
   final Color statusPillText;
   final String defaultStatus;
 
-  TaskCardTheme({
+  const TaskCardTheme({
     required this.cardBg,
     required this.chipBg,
     required this.cardBorder,
@@ -20,72 +20,84 @@ class TaskCardTheme {
     required this.defaultStatus,
   });
 
+  static const TaskCardTheme _red = TaskCardTheme(
+    cardBg: Color(0xFFFFECEC),
+    chipBg: Color(0xFFFED7D7),
+    cardBorder: Color(0xFFFCA5A5),
+    accentColor: Color(0xFFE11D48),
+    statusDotColor: Color(0xFFE11D48),
+    statusPillText: Color(0xFFBE123C),
+    defaultStatus: 'Urgent',
+  );
+
+  static const TaskCardTheme _peach = TaskCardTheme(
+    cardBg: Color(0xFFFFF1E8),
+    chipBg: Color(0xFFFFE0D0),
+    cardBorder: Color(0xFFFDBA74),
+    accentColor: Color(0xFFEA580C),
+    statusDotColor: Color(0xFFEA580C),
+    statusPillText: Color(0xFFC2410C),
+    defaultStatus: 'Important',
+  );
+
+  static const TaskCardTheme _purple = TaskCardTheme(
+    cardBg: Color(0xFFF5F0FF),
+    chipBg: Color(0xFFEAE0FD),
+    cardBorder: Color(0xFFC4B5FD),
+    accentColor: Color(0xFF7C3AED),
+    statusDotColor: Color(0xFF7C3AED),
+    statusPillText: Color(0xFF6D28D9),
+    defaultStatus: 'Routine',
+  );
+
+  static const TaskCardTheme _mint = TaskCardTheme(
+    cardBg: Color(0xFFE6FAF6),
+    chipBg: Color(0xFFCCFBF1),
+    cardBorder: Color(0xFF5EEAD4),
+    accentColor: Color(0xFF059669),
+    statusDotColor: Color(0xFF059669),
+    statusPillText: Color(0xFF047857),
+    defaultStatus: 'Low Priority',
+  );
+
+  static const TaskCardTheme _pink = TaskCardTheme(
+    cardBg: Color(0xFFFDF2F8),
+    chipBg: Color(0xFFFCE7F3),
+    cardBorder: Color(0xFFF9A8D4),
+    accentColor: Color(0xFFDB2777),
+    statusDotColor: Color(0xFFDB2777),
+    statusPillText: Color(0xFFBE185D),
+    defaultStatus: 'Creative',
+  );
+
+  static const TaskCardTheme _blue = TaskCardTheme(
+    cardBg: Color(0xFFEBF5FF),
+    chipBg: Color(0xFFD6EBFF),
+    cardBorder: Color(0xFF93C5FD),
+    accentColor: Color(0xFF0284C7),
+    statusDotColor: Color(0xFF0284C7),
+    statusPillText: Color(0xFF0369A1),
+    defaultStatus: 'Normal',
+  );
+
   static TaskCardTheme forTheme(String themeKey) {
     switch (themeKey.toLowerCase().trim()) {
       case 'red':
-        return TaskCardTheme(
-          cardBg: const Color(0xFFFFECEC),
-          chipBg: const Color(0xFFFED7D7),
-          cardBorder: const Color(0xFFFCA5A5),
-          accentColor: const Color(0xFFE11D48),
-          statusDotColor: const Color(0xFFE11D48),
-          statusPillText: const Color(0xFFBE123C),
-          defaultStatus: 'Urgent',
-        );
+        return _red;
       case 'peach':
       case 'orange':
-        return TaskCardTheme(
-          cardBg: const Color(0xFFFFF1E8),
-          chipBg: const Color(0xFFFFE0D0),
-          cardBorder: const Color(0xFFFDBA74),
-          accentColor: const Color(0xFFEA580C),
-          statusDotColor: const Color(0xFFEA580C),
-          statusPillText: const Color(0xFFC2410C),
-          defaultStatus: 'Important',
-        );
+        return _peach;
       case 'lavender':
       case 'purple':
-        return TaskCardTheme(
-          cardBg: const Color(0xFFF5F0FF),
-          chipBg: const Color(0xFFEAE0FD),
-          cardBorder: const Color(0xFFC4B5FD),
-          accentColor: const Color(0xFF7C3AED),
-          statusDotColor: const Color(0xFF7C3AED),
-          statusPillText: const Color(0xFF6D28D9),
-          defaultStatus: 'Routine',
-        );
+        return _purple;
       case 'mint':
       case 'green':
-        return TaskCardTheme(
-          cardBg: const Color(0xFFE6FAF6),
-          chipBg: const Color(0xFFCCFBF1),
-          cardBorder: const Color(0xFF5EEAD4),
-          accentColor: const Color(0xFF059669),
-          statusDotColor: const Color(0xFF059669),
-          statusPillText: const Color(0xFF047857),
-          defaultStatus: 'Low Priority',
-        );
+        return _mint;
       case 'pink':
-        return TaskCardTheme(
-          cardBg: const Color(0xFFFDF2F8),
-          chipBg: const Color(0xFFFCE7F3),
-          cardBorder: const Color(0xFFF9A8D4),
-          accentColor: const Color(0xFFDB2777),
-          statusDotColor: const Color(0xFFDB2777),
-          statusPillText: const Color(0xFFBE185D),
-          defaultStatus: 'Creative',
-        );
+        return _pink;
       case 'blue':
       default:
-        return TaskCardTheme(
-          cardBg: const Color(0xFFEBF5FF),
-          chipBg: const Color(0xFFD6EBFF),
-          cardBorder: const Color(0xFF93C5FD),
-          accentColor: const Color(0xFF0284C7),
-          statusDotColor: const Color(0xFF0284C7),
-          statusPillText: const Color(0xFF0369A1),
-          defaultStatus: 'Normal',
-        );
+        return _blue;
     }
   }
 }

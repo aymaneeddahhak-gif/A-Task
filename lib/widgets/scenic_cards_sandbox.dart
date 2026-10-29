@@ -1,6 +1,33 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import '../models/task_model.dart';
+import '../services/local_storage_service.dart';
+import '../state/task_provider.dart';
+
+// Cached base Poppins TextStyle to avoid repeated GoogleFonts registry lookups inside build()
+final TextStyle _kPoppins = GoogleFonts.poppins();
+
+TextStyle _poppins({
+  double? fontSize,
+  FontWeight? fontWeight,
+  Color? color,
+  double? letterSpacing,
+  double? height,
+  TextDecoration? decoration,
+}) {
+  return _kPoppins.copyWith(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+    letterSpacing: letterSpacing,
+    height: height,
+    decoration: decoration,
+  );
+}
 
 enum ScenicSceneType {
   morningRun, // 1. Morning Run -> Lo-Fi Atmospheric Glow Vector (Top-Right)
@@ -10,6 +37,8 @@ enum ScenicSceneType {
 }
 
 class ScenicTaskCardModel {
+  static final DateFormat _timeFmt = DateFormat('hh:mm a');
+
   final String id;
   final String title;
   final String description;
@@ -30,7 +59,11 @@ class ScenicTaskCardModel {
   final Color accentColor;
   final Color softTintColor;
 
-  const ScenicTaskCardModel({
+  // Cached parsed minutes for O(1) real-time progress computation
+  late final int? _startMinutes;
+  late final int? _endMinutes;
+
+  ScenicTaskCardModel({
     required this.id,
     required this.title,
     required this.description,
@@ -49,7 +82,39 @@ class ScenicTaskCardModel {
     required this.autoCondition,
     required this.accentColor,
     required this.softTintColor,
-  });
+  }) {
+    _startMinutes = _parseMins(startTime);
+    final rawEnd = _parseMins(endTime);
+    if (_startMinutes != null && rawEnd != null) {
+      _endMinutes = rawEnd <= _startMinutes! ? rawEnd + 24 * 60 : rawEnd;
+    } else {
+      _endMinutes = rawEnd;
+    }
+  }
+
+  static int? _parseMins(String input) {
+    try {
+      final dt = _timeFmt.parse(input.trim());
+      return dt.hour * 60 + dt.minute;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Computes real-time progress & status from current wall-clock time.
+  (double, String) resolveLiveProgress(DateTime now) {
+    if (isCompleted) return (1.0, '100% Done');
+    final s = _startMinutes;
+    final e = _endMinutes;
+    if (s != null && e != null && e > s) {
+      final nowM = now.hour * 60 + now.minute;
+      if (nowM >= s && nowM <= e) {
+        final frac = ((nowM - s) / (e - s)).clamp(0.15, 0.96);
+        return (frac, '${(frac * 100).round()}% Active Now');
+      }
+    }
+    return (progress, status);
+  }
 
   ScenicTaskCardModel copyWith({
     bool? isCompleted,
@@ -120,26 +185,39 @@ class ScenicTaskCardModel {
     ScenicSceneType scene;
     if (overrideScene != null) {
       scene = overrideScene;
-    } else if (lower.contains('night run') ||
-        lower.contains('evening run') ||
-        (isPM && lower.contains('run')) ||
-        lower.contains('night')) {
+    } else if (lower.contains('night') ||
+        lower.contains('evening') ||
+        (lower.contains('run') && isPM)) {
       scene = ScenicSceneType.nightRun;
-    } else if (lower.contains('coffee') ||
-        lower.contains('espresso') ||
-        lower.contains('latte') ||
-        lower.contains('breakfast') ||
-        lower.contains('tea') ||
-        lower.contains('plan')) {
-      scene = ScenicSceneType.coffeeTime;
-    } else if (lower.contains('morning run') ||
-        lower.contains('run') ||
+    } else if (lower.contains('run') ||
         lower.contains('jog') ||
-        lower.contains('cardio') ||
-        lower.contains('walk')) {
+        lower.contains('walk') ||
+        lower.contains('workout') ||
+        lower.contains('cardio')) {
       scene = ScenicSceneType.morningRun;
-    } else {
+    } else if (lower.contains('coffee') ||
+        lower.contains('cafe') ||
+        lower.contains('plan') ||
+        lower.contains('tea') ||
+        lower.contains('breakfast')) {
+      scene = ScenicSceneType.coffeeTime;
+    } else if (lower.contains('study') ||
+        lower.contains('code') ||
+        lower.contains('focus') ||
+        lower.contains('read') ||
+        lower.contains('deep') ||
+        lower.contains('work')) {
       scene = ScenicSceneType.deepStudy;
+    } else {
+      if (routineHorizon == 'Week') {
+        scene = ScenicSceneType.deepStudy;
+      } else if (routineHorizon == 'Month') {
+        scene = ScenicSceneType.nightRun;
+      } else if (isPM) {
+        scene = ScenicSceneType.nightRun;
+      } else {
+        scene = ScenicSceneType.coffeeTime;
+      }
     }
 
     switch (scene) {
@@ -159,10 +237,10 @@ class ScenicTaskCardModel {
           isCompleted: isCompleted,
           isStarred: isStarred,
           autoScene: scene,
-          autoDegree: '21°',
-          autoCondition: 'Sunrise Glow',
-          accentColor: const Color(0xFF7C3AED),
-          softTintColor: const Color(0xFFF5F3FF),
+          autoDegree: '19°',
+          autoCondition: 'Sunrise • Lo-Fi',
+          accentColor: const Color(0xFFEA580C),
+          softTintColor: const Color(0xFFFFF7ED),
         );
       case ScenicSceneType.coffeeTime:
         return ScenicTaskCardModel(
@@ -341,9 +419,12 @@ const List<Map<String, String>> kQuickTaskPresets = [
 
 /// Interactive Sandbox Showcase featuring the 4 chosen Flat-Vector artworks
 /// softly blended onto crisp white cards (without filling the whole card),
-/// with a live "Background Image Clarity" slider and Day/Night Deep Study switcher.
+/// with a live "Background Image Clarity" slider, Day/Night Deep Study switcher,
+/// GPU-optimized rendering, and real-time clock/provider synchronization.
 class ScenicCardsSandboxShowcase extends StatefulWidget {
-  const ScenicCardsSandboxShowcase({super.key});
+  final TaskProvider? provider;
+
+  const ScenicCardsSandboxShowcase({super.key, this.provider});
 
   @override
   State<ScenicCardsSandboxShowcase> createState() =>
@@ -352,25 +433,143 @@ class ScenicCardsSandboxShowcase extends StatefulWidget {
 
 class _ScenicCardsSandboxShowcaseState
     extends State<ScenicCardsSandboxShowcase> {
+  static const String _storageKeySandboxSettings = 'atask_sandbox_settings_v1';
+  static const List<String> _allCardAssets = [
+    'assets/images/cards/morning_run_lofi.png',
+    'assets/images/cards/coffee_time_editorial.png',
+    'assets/images/cards/deep_study_day.png',
+    'assets/images/cards/deep_study_night.png',
+    'assets/images/cards/night_run_editorial.png',
+  ];
+
   late List<ScenicTaskCardModel> _cards;
-  double _imageClarity = 0.78; // Controls the clarity/opacity of the background image on the white card
-  double _imageSpread = 0.60; // Controls how much of the right side the soft image covers (does not fill whole card)
-  double _curlSize = 34.0; // 3D top-left corner curl size
-  bool _isDarkTimeForStudy = false; // Switches Deep Study between First-Left (Day) and First-Right (Dark Time)
+  double _imageClarity = 0.78;
+  double _imageSpread = 0.60;
+  double _curlSize = 34.0;
+  late bool _isDarkTimeForStudy;
   bool _twoColumnGrid = false;
   String _selectedHorizon = 'All';
   bool _showAutoCreator = false;
+  bool _didPrecacheAssets = false;
+  DateTime _now = DateTime.now();
+  Timer? _clockTimer;
   final TextEditingController _taskTitleController = TextEditingController();
   String _newTaskHorizon = 'Day';
 
   @override
   void initState() {
     super.initState();
+    final hour = _now.hour;
+    // Automatically default Deep Study to Dark Time during evening/night hours (6 PM - 6 AM)
+    _isDarkTimeForStudy = hour >= 18 || hour < 6;
     _cards = List<ScenicTaskCardModel>.from(kInitialScenicTaskCards);
+    _loadSandboxSettings();
+    _syncLiveTasksFromProvider();
+
+    _clockTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!mounted) return;
+      final current = DateTime.now();
+      if (current.minute != _now.minute) {
+        setState(() => _now = current);
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didPrecacheAssets) {
+      _didPrecacheAssets = true;
+      for (final assetPath in _allCardAssets) {
+        precacheImage(AssetImage(assetPath), context);
+      }
+    }
+  }
+
+  void _loadSandboxSettings() {
+    try {
+      final raw = LocalStorageService.getString(_storageKeySandboxSettings);
+      if (raw != null && raw.isNotEmpty) {
+        final map = jsonDecode(raw);
+        if (map is Map<String, dynamic>) {
+          _imageClarity =
+              ((map['clarity'] as num?)?.toDouble() ?? _imageClarity).clamp(
+                0.15,
+                1.0,
+              );
+          _imageSpread =
+              ((map['spread'] as num?)?.toDouble() ?? _imageSpread).clamp(
+                0.42,
+                0.78,
+              );
+          _curlSize = ((map['curl'] as num?)?.toDouble() ?? _curlSize).clamp(
+            20.0,
+            50.0,
+          );
+          if (map['darkStudy'] is bool) {
+            _isDarkTimeForStudy = map['darkStudy'] as bool;
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _saveSandboxSettings() {
+    try {
+      LocalStorageService.setString(
+        _storageKeySandboxSettings,
+        jsonEncode({
+          'clarity': _imageClarity,
+          'spread': _imageSpread,
+          'curl': _curlSize,
+          'darkStudy': _isDarkTimeForStudy,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  /// Syncs any real user-created tasks from TaskProvider into the Sandbox cards list.
+  void _syncLiveTasksFromProvider() {
+    final prov = widget.provider;
+    if (prov == null || prov.tasks.isEmpty) return;
+    final existingIds = _cards.map((c) => c.id).toSet();
+    for (final TaskModel t in prov.tasks.reversed) {
+      final syncId = 'prov_${t.id}';
+      if (!existingIds.contains(syncId)) {
+        final horizon =
+            (t.routineType == 'Day' ||
+                t.routineType == 'Week' ||
+                t.routineType == 'Month')
+            ? t.routineType
+            : 'Day';
+        final progressEntry = t.dynamicProgress;
+        _cards.insert(
+          0,
+          ScenicTaskCardModel.createAuto(
+            id: syncId,
+            title: t.title,
+            description: t.description.isNotEmpty
+                ? t.description
+                : '${t.project} • Live synced task',
+            startTime: t.startTime,
+            endTime: t.endTime,
+            duration: t.cleanDuration,
+            routineHorizon: horizon,
+            dateOrRecurrence: t.dateString,
+            categoryTag: t.project,
+            status: t.isCompleted ? 'Completed' : t.status,
+            progress: progressEntry.key,
+            isCompleted: t.isCompleted,
+            isStarred: t.isStarred,
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
+    _clockTimer?.cancel();
     _taskTitleController.dispose();
     super.dispose();
   }
@@ -396,6 +595,12 @@ class _ScenicCardsSandboxShowcaseState
         return c;
       }).toList();
     });
+    if (id.startsWith('prov_') && widget.provider != null) {
+      final rawId = int.tryParse(id.substring(5));
+      if (rawId != null) {
+        widget.provider!.toggleTaskComplete(rawId);
+      }
+    }
   }
 
   void _toggleCardStar(String id) {
@@ -407,6 +612,12 @@ class _ScenicCardsSandboxShowcaseState
         return c;
       }).toList();
     });
+    if (id.startsWith('prov_') && widget.provider != null) {
+      final rawId = int.tryParse(id.substring(5));
+      if (rawId != null) {
+        widget.provider!.toggleTaskStarred(rawId);
+      }
+    }
   }
 
   void _addAutoTaskFromPreset(Map<String, String> preset) {
@@ -441,23 +652,29 @@ class _ScenicCardsSandboxShowcaseState
     final title = _taskTitleController.text.trim();
     if (title.isEmpty) return;
 
+    final nowFormatted = DateFormat('hh:mm a').format(_now);
+    final endFormatted = DateFormat(
+      'hh:mm a',
+    ).format(_now.add(const Duration(minutes: 45)));
+
     final recurrence = _newTaskHorizon == 'Day'
         ? 'Daily • Every Day'
         : (_newTaskHorizon == 'Week'
-            ? 'Weekly • Every Mon'
-            : 'Monthly • Every 1st');
+              ? 'Weekly • Every ${DateFormat('EEE').format(_now)}'
+              : 'Monthly • Every 1st');
 
     final newCard = ScenicTaskCardModel.createAuto(
       id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
       title: title,
-      description: 'Auto-matched flat-vector artwork & weather • $_newTaskHorizon Routine',
-      startTime: '08:00 AM',
-      endTime: '08:45 AM',
+      description:
+          'Auto-matched flat-vector artwork & live weather • $_newTaskHorizon Routine',
+      startTime: nowFormatted,
+      endTime: endFormatted,
       duration: '45m',
       routineHorizon: _newTaskHorizon,
       dateOrRecurrence: recurrence,
       categoryTag: '$_newTaskHorizon Routine',
-      status: 'Locked In',
+      status: 'Active Now',
       progress: 0.35,
       isStarred: true,
     );
@@ -472,6 +689,7 @@ class _ScenicCardsSandboxShowcaseState
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredCards;
+    final liveClock = DateFormat('hh:mm a').format(_now);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,14 +712,17 @@ class _ScenicCardsSandboxShowcaseState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Day/Dark Time Switch for Deep Study + Grid Toggle + Test Task
+              // Top Row: Day/Dark Time Switch for Deep Study + Live Clock + Grid Toggle + Test Task
               Row(
                 children: [
                   // Day vs Dark Time Toggle (Switches Deep Study between First-Left and First-Right)
                   GestureDetector(
-                    onTap: () => setState(
-                      () => _isDarkTimeForStudy = !_isDarkTimeForStudy,
-                    ),
+                    onTap: () {
+                      setState(
+                        () => _isDarkTimeForStudy = !_isDarkTimeForStudy,
+                      );
+                      _saveSandboxSettings();
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
@@ -534,9 +755,9 @@ class _ScenicCardsSandboxShowcaseState
                           const SizedBox(width: 5),
                           Text(
                             _isDarkTimeForStudy
-                                ? 'Study: Dark Time (Right Art)'
-                                : 'Study: Day Time (Left Art)',
-                            style: GoogleFonts.poppins(
+                                ? 'Study: Dark Time'
+                                : 'Study: Day Time',
+                            style: _poppins(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: _isDarkTimeForStudy
@@ -546,6 +767,41 @@ class _ScenicCardsSandboxShowcaseState
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Live Real-Time Indicator Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: const Color(0xFFA7F3D0)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          liveClock,
+                          style: _poppins(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF047857),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const Spacer(),
@@ -575,7 +831,7 @@ class _ScenicCardsSandboxShowcaseState
                           const SizedBox(width: 4),
                           Text(
                             _twoColumnGrid ? '2x2 Grid' : 'Full Cards',
-                            style: GoogleFonts.poppins(
+                            style: _poppins(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF0F172A),
@@ -609,7 +865,7 @@ class _ScenicCardsSandboxShowcaseState
                           const SizedBox(width: 3),
                           Text(
                             'Test Task',
-                            style: GoogleFonts.poppins(
+                            style: _poppins(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -624,7 +880,7 @@ class _ScenicCardsSandboxShowcaseState
 
               const SizedBox(height: 12),
 
-              // SLIDER 1: Background Image Clarity on White Card (User's explicit request!)
+              // SLIDER 1: Background Image Clarity on White Card
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -647,7 +903,7 @@ class _ScenicCardsSandboxShowcaseState
                         const SizedBox(width: 6),
                         Text(
                           'Background Image Clarity:',
-                          style: GoogleFonts.poppins(
+                          style: _poppins(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F172A),
@@ -673,6 +929,7 @@ class _ScenicCardsSandboxShowcaseState
                               max: 1.0,
                               onChanged: (v) =>
                                   setState(() => _imageClarity = v),
+                              onChangeEnd: (_) => _saveSandboxSettings(),
                             ),
                           ),
                         ),
@@ -687,7 +944,7 @@ class _ScenicCardsSandboxShowcaseState
                           ),
                           child: Text(
                             '${(_imageClarity * 100).round()}%',
-                            style: GoogleFonts.poppins(
+                            style: _poppins(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF4F46E5),
@@ -696,12 +953,12 @@ class _ScenicCardsSandboxShowcaseState
                         ),
                       ],
                     ),
-                    // Quick Clarity Presets (Soft 45%, Balanced 75%, Crisp 100%)
+                    // Quick Clarity Presets (Soft 40%, Balanced 75%, Crisp 100%)
                     Row(
                       children: [
                         Text(
                           'Quick Clarity:',
-                          style: GoogleFonts.poppins(
+                          style: _poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF64748B),
@@ -732,7 +989,7 @@ class _ScenicCardsSandboxShowcaseState
                   const SizedBox(width: 5),
                   Text(
                     'Soft Image Width:',
-                    style: GoogleFonts.poppins(
+                    style: _poppins(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF475569),
@@ -757,12 +1014,13 @@ class _ScenicCardsSandboxShowcaseState
                         min: 0.42,
                         max: 0.78,
                         onChanged: (v) => setState(() => _imageSpread = v),
+                        onChangeEnd: (_) => _saveSandboxSettings(),
                       ),
                     ),
                   ),
                   Text(
                     '${(_imageSpread * 100).round()}%',
-                    style: GoogleFonts.poppins(
+                    style: _poppins(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F172A),
@@ -771,7 +1029,7 @@ class _ScenicCardsSandboxShowcaseState
                   const SizedBox(width: 10),
                   Text(
                     'Curl:',
-                    style: GoogleFonts.poppins(
+                    style: _poppins(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF475569),
@@ -797,6 +1055,7 @@ class _ScenicCardsSandboxShowcaseState
                         min: 20.0,
                         max: 50.0,
                         onChanged: (v) => setState(() => _curlSize = v),
+                        onChangeEnd: (_) => _saveSandboxSettings(),
                       ),
                     ),
                   ),
@@ -810,7 +1069,10 @@ class _ScenicCardsSandboxShowcaseState
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildHorizonChip('All', 'All 4 Concepts (${_cards.length})'),
+                    _buildHorizonChip(
+                      'All',
+                      'All 4 Concepts (${_cards.length})',
+                    ),
                     const SizedBox(width: 6),
                     _buildHorizonChip('Day', '☀️ Day Routine'),
                     const SizedBox(width: 6),
@@ -826,7 +1088,7 @@ class _ScenicCardsSandboxShowcaseState
                 const Divider(height: 18, color: Color(0xFFE2E8F0)),
                 Text(
                   'Pick a task or type your own (Artwork & Weather are auto-assigned!):',
-                  style: GoogleFonts.poppins(
+                  style: _poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF475569),
@@ -860,7 +1122,7 @@ class _ScenicCardsSandboxShowcaseState
                             const SizedBox(width: 4),
                             Text(
                               '${preset['title']} (${preset['horizon']})',
-                              style: GoogleFonts.poppins(
+                              style: _poppins(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF0F172A),
@@ -878,11 +1140,11 @@ class _ScenicCardsSandboxShowcaseState
                     Expanded(
                       child: TextField(
                         controller: _taskTitleController,
-                        style: GoogleFonts.poppins(fontSize: 12),
+                        style: _poppins(fontSize: 12),
                         decoration: InputDecoration(
                           hintText:
                               'e.g. Morning Run, Coffee Time, Deep Study, Night Run...',
-                          hintStyle: GoogleFonts.poppins(
+                          hintStyle: _poppins(
                             fontSize: 11,
                             color: const Color(0xFF94A3B8),
                           ),
@@ -912,7 +1174,7 @@ class _ScenicCardsSandboxShowcaseState
                         ),
                         child: DropdownButton<String>(
                           value: _newTaskHorizon,
-                          style: GoogleFonts.poppins(
+                          style: _poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -951,7 +1213,7 @@ class _ScenicCardsSandboxShowcaseState
                       ),
                       child: Text(
                         'Add',
-                        style: GoogleFonts.poppins(
+                        style: _poppins(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -966,7 +1228,7 @@ class _ScenicCardsSandboxShowcaseState
 
         const SizedBox(height: 16),
 
-        // 2. Render the 4 Soft-Blended White Flat-Vector Task Cards
+        // 2. Render the 4 Soft-Blended White Flat-Vector Task Cards (Each isolated in a RepaintBoundary)
         if (_twoColumnGrid)
           GridView.builder(
             shrinkWrap: true,
@@ -980,15 +1242,19 @@ class _ScenicCardsSandboxShowcaseState
             ),
             itemBuilder: (context, index) {
               final item = filtered[index];
-              return ScenicCurledTaskCard(
-                card: item,
-                imageClarity: _imageClarity,
-                imageSpread: _imageSpread,
-                curlSize: _curlSize,
-                isDarkTimeForStudy: _isDarkTimeForStudy,
-                compact: true,
-                onToggleComplete: () => _toggleCardComplete(item.id),
-                onToggleStar: () => _toggleCardStar(item.id),
+              return RepaintBoundary(
+                key: ValueKey('grid_${item.id}'),
+                child: ScenicCurledTaskCard(
+                  card: item,
+                  now: _now,
+                  imageClarity: _imageClarity,
+                  imageSpread: _imageSpread,
+                  curlSize: _curlSize,
+                  isDarkTimeForStudy: _isDarkTimeForStudy,
+                  compact: true,
+                  onToggleComplete: () => _toggleCardComplete(item.id),
+                  onToggleStar: () => _toggleCardStar(item.id),
+                ),
               );
             },
           )
@@ -997,19 +1263,23 @@ class _ScenicCardsSandboxShowcaseState
             children: filtered
                 .map(
                   (item) => Padding(
+                    key: ValueKey('list_${item.id}'),
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: SizedBox(
-                      height: 196,
-                      width: double.infinity,
-                      child: ScenicCurledTaskCard(
-                        card: item,
-                        imageClarity: _imageClarity,
-                        imageSpread: _imageSpread,
-                        curlSize: _curlSize,
-                        isDarkTimeForStudy: _isDarkTimeForStudy,
-                        compact: false,
-                        onToggleComplete: () => _toggleCardComplete(item.id),
-                        onToggleStar: () => _toggleCardStar(item.id),
+                    child: RepaintBoundary(
+                      child: SizedBox(
+                        height: 196,
+                        width: double.infinity,
+                        child: ScenicCurledTaskCard(
+                          card: item,
+                          now: _now,
+                          imageClarity: _imageClarity,
+                          imageSpread: _imageSpread,
+                          curlSize: _curlSize,
+                          isDarkTimeForStudy: _isDarkTimeForStudy,
+                          compact: false,
+                          onToggleComplete: () => _toggleCardComplete(item.id),
+                          onToggleStar: () => _toggleCardStar(item.id),
+                        ),
                       ),
                     ),
                   ),
@@ -1023,7 +1293,10 @@ class _ScenicCardsSandboxShowcaseState
   Widget _buildClarityPresetButton(String label, double value) {
     final isSelected = (_imageClarity - value).abs() < 0.05;
     return GestureDetector(
-      onTap: () => setState(() => _imageClarity = value),
+      onTap: () {
+        setState(() => _imageClarity = value);
+        _saveSandboxSettings();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
@@ -1037,7 +1310,7 @@ class _ScenicCardsSandboxShowcaseState
         ),
         child: Text(
           label,
-          style: GoogleFonts.poppins(
+          style: _poppins(
             fontSize: 9.5,
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.white : const Color(0xFF475569),
@@ -1065,7 +1338,7 @@ class _ScenicCardsSandboxShowcaseState
         ),
         child: Text(
           label,
-          style: GoogleFonts.poppins(
+          style: _poppins(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             color: isSelected ? Colors.white : const Color(0xFF475569),
@@ -1076,13 +1349,14 @@ class _ScenicCardsSandboxShowcaseState
   }
 }
 
-/// Crisp White Task Card with:
+/// GPU-Optimized Crisp White Task Card with:
 /// - 3D Top-Left Paper Corner Curl
-/// - Softly feathered Flat-Vector Illustration on the right side (does NOT fill the whole card!)
+/// - Softly feathered Flat-Vector Illustration on the right side (zero ShaderMask/Opacity saveLayer overhead!)
 /// - Adjustable Background Image Clarity (`imageClarity`) & Soft Width (`imageSpread`)
-/// - Real Task Title, Auto Weather Badge, Routine Horizon, Progress Line, and Interactive Check-Off
+/// - Real-Time Progress Line, Auto Weather Badge, Routine Horizon, and Interactive Check-Off
 class ScenicCurledTaskCard extends StatelessWidget {
   final ScenicTaskCardModel card;
+  final DateTime? now;
   final double imageClarity;
   final double imageSpread;
   final double curlSize;
@@ -1094,6 +1368,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
   const ScenicCurledTaskCard({
     super.key,
     required this.card,
+    this.now,
     this.imageClarity = 0.78,
     this.imageSpread = 0.60,
     this.curlSize = 34.0,
@@ -1126,17 +1401,22 @@ class ScenicCurledTaskCard extends StatelessWidget {
 
     final String effectiveDegree =
         (card.autoScene == ScenicSceneType.deepStudy && isDarkTimeForStudy)
-            ? '15°'
-            : card.autoDegree;
+        ? '15°'
+        : card.autoDegree;
     final String effectiveCondition =
         (card.autoScene == ScenicSceneType.deepStudy && isDarkTimeForStudy)
-            ? 'Night Lamp • Focus'
-            : card.autoCondition;
+        ? 'Night Lamp • Focus'
+        : card.autoCondition;
+
+    final (liveProgress, liveStatus) = card.resolveLiveProgress(
+      now ?? DateTime.now(),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardW = constraints.maxWidth;
         final artworkWidth = cardW * imageSpread.clamp(0.40, 0.82);
+        final bottomBarHeight = compact ? 38.0 : 46.0;
 
         return Stack(
           clipBehavior: Clip.none,
@@ -1172,7 +1452,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                     Positioned(
                       right: 0,
                       top: 0,
-                      bottom: 44,
+                      bottom: bottomBarHeight - 2,
                       width: artworkWidth,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -1190,51 +1470,62 @@ class ScenicCurledTaskCard extends StatelessWidget {
                       ),
                     ),
 
-                    // B. SOFT FLAT-VECTOR ILLUSTRATION ON THE RIGHT SIDE OF THE WHITE CARD
-                    // Does NOT fill the whole card — softly dissolves into the white card!
+                    // B. GPU-OPTIMIZED SOFT FLAT-VECTOR ILLUSTRATION ON THE RIGHT SIDE
+                    // Uses direct Image color modulation + white gradient overlays instead of nested ShaderMask saveLayers!
                     Positioned(
                       right: 0,
                       top: 0,
-                      bottom: compact ? 38 : 46,
+                      bottom: bottomBarHeight,
                       width: artworkWidth,
-                      child: Opacity(
-                        opacity: imageClarity.clamp(0.05, 1.0),
-                        child: ShaderMask(
-                          shaderCallback: (Rect bounds) {
-                            return const LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.transparent,
-                                Color(0x44FFFFFF),
-                                Color(0xCCFFFFFF),
-                                Colors.white,
-                              ],
-                              stops: [0.0, 0.22, 0.52, 0.85],
-                            ).createShader(bounds);
-                          },
-                          blendMode: BlendMode.dstIn,
-                          child: ShaderMask(
-                            shaderCallback: (Rect bounds) {
-                              return const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.white,
-                                  Colors.white,
-                                  Colors.transparent,
-                                ],
-                                stops: [0.0, 0.78, 1.0],
-                              ).createShader(bounds);
-                            },
-                            blendMode: BlendMode.dstIn,
-                            child: Image.asset(
-                              assetPath,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.centerRight,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.asset(
+                            assetPath,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.centerRight,
+                            filterQuality: FilterQuality.medium,
+                            color: Colors.white.withValues(
+                              alpha: imageClarity.clamp(0.05, 1.0),
+                            ),
+                            colorBlendMode: BlendMode.modulate,
+                          ),
+                          // Horizontal soft feather into the white card on the left
+                          const IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.white,
+                                    Color(0xBBFFFFFF),
+                                    Color(0x33FFFFFF),
+                                    Color(0x00FFFFFF),
+                                  ],
+                                  stops: [0.0, 0.22, 0.52, 0.85],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          // Vertical soft feather at the bottom edge above the progress bar
+                          const IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0x00FFFFFF),
+                                    Color(0x00FFFFFF),
+                                    Colors.white,
+                                  ],
+                                  stops: [0.0, 0.78, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -1282,7 +1573,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                         children: [
                                           Text(
                                             effectiveDegree,
-                                            style: GoogleFonts.poppins(
+                                            style: _poppins(
                                               fontSize: compact ? 11 : 13,
                                               fontWeight: FontWeight.w800,
                                               color: card.accentColor,
@@ -1291,7 +1582,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                           const SizedBox(width: 4),
                                           Text(
                                             effectiveCondition,
-                                            style: GoogleFonts.poppins(
+                                            style: _poppins(
                                               fontSize: compact ? 9.5 : 11,
                                               fontWeight: FontWeight.w600,
                                               color: const Color(0xFF334155),
@@ -1325,7 +1616,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                       ),
                                       child: Text(
                                         card.routineHorizon.toUpperCase(),
-                                        style: GoogleFonts.poppins(
+                                        style: _poppins(
                                           fontSize: compact ? 8.5 : 9.5,
                                           fontWeight: FontWeight.w800,
                                           color: _horizonBadgeColor(
@@ -1382,7 +1673,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                         card.title,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.poppins(
+                                        style: _poppins(
                                           fontSize: compact ? 13 : 17,
                                           fontWeight: FontWeight.w800,
                                           color: card.isCompleted
@@ -1401,7 +1692,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                           card.description,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.poppins(
+                                          style: _poppins(
                                             fontSize: 11.5,
                                             fontWeight: FontWeight.w500,
                                             color: const Color(0xFF475569),
@@ -1412,7 +1703,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                   ),
                                 ),
 
-                                // Bottom of Upper Zone: Duration Pill + Category Chip
+                                // Bottom of Upper Zone: Duration Pill + Live Status Chip
                                 Row(
                                   children: [
                                     Container(
@@ -1437,7 +1728,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                           const SizedBox(width: 4),
                                           Text(
                                             card.duration,
-                                            style: GoogleFonts.poppins(
+                                            style: _poppins(
                                               fontSize: compact ? 9.5 : 10.5,
                                               fontWeight: FontWeight.w700,
                                               color: const Color(0xFF0F172A),
@@ -1464,10 +1755,8 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                         ),
                                       ),
                                       child: Text(
-                                        card.isCompleted
-                                            ? '100% Done'
-                                            : card.status,
-                                        style: GoogleFonts.poppins(
+                                        liveStatus,
+                                        style: _poppins(
                                           fontSize: compact ? 9 : 10,
                                           fontWeight: FontWeight.w700,
                                           color: card.isCompleted
@@ -1483,9 +1772,9 @@ class ScenicCurledTaskCard extends StatelessWidget {
                           ),
                         ),
 
-                        // Sleek Progress Line separating the soft visual zone and the bottom time bar
+                        // Sleek Real-Time Progress Line separating the soft visual zone and the bottom time bar
                         LinearProgressIndicator(
-                          value: card.progress,
+                          value: liveProgress,
                           minHeight: 3.0,
                           backgroundColor: const Color(0xFFF1F5F9),
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -1530,7 +1819,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                               : '${card.startTime} - ${card.endTime}',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.poppins(
+                                          style: _poppins(
                                             fontSize: compact ? 11.5 : 13.5,
                                             fontWeight: FontWeight.w700,
                                             color: const Color(0xFF1E293B),
@@ -1546,7 +1835,7 @@ class ScenicCurledTaskCard extends StatelessWidget {
                                 card.dateOrRecurrence,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
+                                style: _poppins(
                                   fontSize: compact ? 9.5 : 11.5,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF94A3B8),

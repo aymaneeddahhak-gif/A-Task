@@ -164,7 +164,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
                       textSecondary: textSecondary,
                     ),
                     const SizedBox(height: 14),
-                    const ScenicCardsSandboxShowcase(),
+                    ScenicCardsSandboxShowcase(provider: widget.provider),
                   ] else if (_selectedTab == 1) ...[
                     // Tab 1: All New Sandbox Designs Showcase (Scenic Cards, Lifted Paper Card, Analytics Graph, Pro Plan, Mascot)
                     _buildSandboxShowcase(cardBg, textPrimary, textSecondary, borderCol),
@@ -329,7 +329,7 @@ class _DesignSandboxScreenState extends State<DesignSandboxScreen> {
           textSecondary: textSecondary,
         ),
         const SizedBox(height: 14),
-        const ScenicCardsSandboxShowcase(),
+        ScenicCardsSandboxShowcase(provider: widget.provider),
 
         const SizedBox(height: 36),
 

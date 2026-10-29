@@ -97,13 +97,17 @@ class _MainTabContainerState extends State<MainTabContainer> {
                         // Main Scaffold with Floating Pill Dock Navigation
                         Scaffold(
                           backgroundColor: currentSoftBg,
-                          body: _buildCurrentScreen(_provider.selectedTab),
+                          body: RepaintBoundary(
+                            child: _buildCurrentScreen(_provider.selectedTab),
+                          ),
                           bottomNavigationBar: showBottomNav
-                              ? AppBottomNavBar(
-                                  selectedIndex: _provider.selectedTab,
-                                  onTabSelected: (index) => _provider.setSelectedTab(index),
-                                  onAddClick: () => _provider.openAddTask(),
-                                  isNight: currentIsNight,
+                              ? RepaintBoundary(
+                                  child: AppBottomNavBar(
+                                    selectedIndex: _provider.selectedTab,
+                                    onTabSelected: (index) => _provider.setSelectedTab(index),
+                                    onAddClick: () => _provider.openAddTask(),
+                                    isNight: currentIsNight,
+                                  ),
                                 )
                               : null,
                         ),
