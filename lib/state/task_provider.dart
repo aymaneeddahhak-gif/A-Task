@@ -376,8 +376,8 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openRandomTask() {
-    _candidateRandomTask = generateRandomTaskCandidate();
+  void openRandomTask([String routineType = 'None']) {
+    _candidateRandomTask = generateRandomTaskCandidate(routineType: routineType);
     notifyListeners();
   }
 

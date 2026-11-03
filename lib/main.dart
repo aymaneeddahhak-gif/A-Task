@@ -39,19 +39,12 @@ class MainTabContainer extends StatefulWidget {
 
 class _MainTabContainerState extends State<MainTabContainer> {
   late final TaskProvider _provider;
-  bool _showSplash = true;
+  final bool _showSplash = false;
 
   @override
   void initState() {
     super.initState();
     _provider = TaskProvider();
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (mounted) {
-        setState(() {
-          _showSplash = false;
-        });
-      }
-    });
   }
 
   @override
@@ -271,7 +264,23 @@ class _MainTabContainerState extends State<MainTabContainer> {
             ),
           ),
 
-          const SizedBox(height: 36),
+          const SizedBox(height: 12),
+
+          // 3B. Short Browser Showcase Description
+          const SizedBox(
+            width: 390,
+            child: Text(
+              'Interactive mobile app preview showcased in a live phone frame directly in your browser — explore real-time routines, dynamic day/night atmospheres, and AI task planning.',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF94A3B8),
+                height: 1.45,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
 
           // 4. Portfolio-Style Minimalist Footer: "Created by" + mascot + logosultion
           Row(

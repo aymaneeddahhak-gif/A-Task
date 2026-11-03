@@ -41,28 +41,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAfternoon = mode == 1;
     final Color softDownColor = provider.softAtmosphereColor;
 
-    // Active Atmosphere mode label & icon (No "Good" text!)
-    final String modeLabel;
-    final IconData modeIcon;
+    // Top-Left Greeting Text & Icon (Always shows Good Morning / Good Afternoon / Good Evening for all modes!)
+    final String greetingLabel;
+    final IconData greetingIcon;
     final Color greetingColor;
-    if (provider.atmosphereMode == 'auto') {
-      modeLabel = 'Auto';
-      modeIcon = Icons.brightness_auto_rounded;
-      greetingColor = isNight
-          ? const Color(0xFF38BDF8)
-          : (isAfternoon ? const Color(0xFFEA580C) : const Color(0xFF0284C7));
-    } else if (mode == 0) {
-      modeLabel = 'Morning';
-      modeIcon = Icons.wb_sunny_rounded;
-      greetingColor = const Color(0xFF0284C7);
+    if (mode == 0) {
+      greetingLabel = 'Good Morning';
+      greetingIcon = Icons.wb_sunny_rounded;
+      greetingColor = const Color(0xFFD97706); // Warm morning sunshine gold/amber
     } else if (mode == 1) {
-      modeLabel = 'Afternoon';
-      modeIcon = Icons.wb_twilight_rounded;
+      greetingLabel = 'Good Afternoon';
+      greetingIcon = Icons.wb_twilight_rounded;
       greetingColor = const Color(0xFFEA580C);
     } else {
-      modeLabel = 'Night';
-      modeIcon = Icons.nightlight_round;
-      greetingColor = const Color(0xFF94A3B8);
+      greetingLabel = 'Good Evening';
+      greetingIcon = Icons.nightlight_round;
+      greetingColor = const Color(0xFF38BDF8);
     }
     final Color nameColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
     final Color headlineColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
@@ -71,10 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // The main vibrant atmospheric color stays fixed at the top and dissolves into the soft down-page color!
     final List<Color> gradientColors;
     if (mode == 0) {
-      // Light Blue Morning: sky blue fading smoothly into soft morning mist
+      // Sunny Morning Sky: crisp sky blue blended with warm golden morning sunshine
       gradientColors = [
+        const Color(0xFF93C5FD),
         const Color(0xFFBAE6FD),
-        const Color(0xFFD6EEFF),
+        const Color(0xFFFEF08A).withOpacity(0.65),
         const Color(0xFFE8F4FE),
         softDownColor,
       ];
@@ -97,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
     }
 
-    final stops = mode == 1
+    final stops = (mode == 0 || mode == 1)
         ? const [0.0, 0.85 * 0.35, 0.85 * 0.65, 0.85 * 0.9, 1.0]
         : const [0.0, 0.85 * 0.5, 0.85 * 0.85, 1.0];
 
@@ -162,20 +157,53 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
 
-        // 3. Morning Sun Flare Decor (Only in Morning Mode)
-        if (mode == 0)
+        // 3. Morning Warm Sunshine & Sun Orb Decor (Only in Morning Mode)
+        if (mode == 0) ...[
           Positioned(
-            top: -20,
+            top: -10,
             right: 20,
             child: Container(
-              width: 90,
-              height: 90,
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFBAE6FD).withOpacity(0.35),
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFDE047).withOpacity(0.95),
+                    const Color(0xFFFBBF24).withOpacity(0.65),
+                    const Color(0xFFBAE6FD).withOpacity(0.0),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFACC15).withOpacity(0.45),
+                    blurRadius: 34,
+                    spreadRadius: 8,
+                  ),
+                ],
               ),
             ),
           ),
+          Positioned(
+            top: 48,
+            right: 8,
+            child: Container(
+              width: 72,
+              height: 11,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.45),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFDE047).withOpacity(0.30),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
 
         // 4. Afternoon Radiant Sunset Decor (Only in Afternoon Mode)
         if (mode == 1) ...[
@@ -232,49 +260,53 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             children: [
-              // 1. Top Header Bar: User Avatar, AYMANE with Mode Text (No "Good"!), and Notification Bell
+              // 1. Top Header Bar: Left (User Avatar + Good Morning/Afternoon/Evening + AYMANE)
+              //                    Right (Scrollable Mode Switch Button + Notification Bell)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Left: Avatar + Mode Text (No "Good"!) + Name
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => provider.setSelectedTab(3),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xFF1E293B),
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 6,
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: Transform.scale(
-                                scale: provider.avatarScale,
-                                alignment: Alignment(provider.avatarOffsetX, provider.avatarOffsetY),
-                                child: Image.asset(
-                                  'assets/images/profile.png',
-                                  width: 44,
-                                  height: 44,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Center(
-                                    child: Text(
-                                      'AD',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                  // Left: Avatar + Greeting ("Good Morning" / "Good Afternoon" / "Good Evening") + Name ("AYMANE")
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () => provider.setSelectedTab(3),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF1E293B),
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: Transform.scale(
+                                  scale: provider.avatarScale,
+                                  alignment: Alignment(provider.avatarOffsetX, provider.avatarOffsetY),
+                                  child: Image.asset(
+                                    'assets/images/profile.png',
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Text(
+                                        'AD',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -283,96 +315,107 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                modeIcon,
-                                size: 13,
-                                color: greetingColor,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    greetingIcon,
+                                    size: 13,
+                                    color: greetingColor,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      greetingLabel, // "Good Morning", "Good Afternoon", "Good Evening"
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                        color: greetingColor,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.1,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(height: 2),
                               Text(
-                                modeLabel, // "Auto", "Morning", "Afternoon", "Night" (No "Good"!)
+                                provider.userName, // "AYMANE"
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: greetingColor,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.1,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: nameColor,
+                                  letterSpacing: -0.2,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            provider.userName, // "AYMANE"
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: nameColor,
-                              letterSpacing: -0.2,
-                            ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // Right: Mode Switch Button (Auto • Morning • Afternoon • Night) BESIDE Notification Bell
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildAtmosphereModeSelector(provider, isNight),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => provider.openNotifications(),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isNight ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.95),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 6,
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(
+                                Icons.notifications_outlined,
+                                size: 20,
+                                color: isNight ? Colors.white : const Color(0xFF191A20),
+                              ),
+                              if (unreadNotifs > 0)
+                                Positioned(
+                                  top: 9,
+                                  right: 9,
+                                  child: Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFE53935),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-
-                  // Right: Notification Bell (Frosted White circle with Red Dot)
-                  GestureDetector(
-                    onTap: () => provider.openNotifications(),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isNight ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.95),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            Icons.notifications_outlined,
-                            size: 20,
-                            color: isNight ? Colors.white : const Color(0xFF191A20),
-                          ),
-                          if (unreadNotifs > 0)
-                            Positioned(
-                              top: 9,
-                              right: 9,
-                              child: Container(
-                                width: 7,
-                                height: 7,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFE53935),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
-
-              const SizedBox(height: 14),
-
-              // Animated 4-Mode Selector Dock: Auto • Morning • Afternoon • Night
-              // Strictly inside app screen shape! Zero browser bottom sheet!
-              _buildAtmosphereModeSelector(provider, isNight),
 
               const SizedBox(height: 18),
 
@@ -572,47 +615,82 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 12),
 
-              // Random Task Button placed under the All - To Do - In Progress row
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => provider.openRandomTask(),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFEFECE6)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+              // Random Task Button (with Task Sign) + Quick Selector: Normal Task | Day Routine | Week Routine | Month Routine
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => provider.openRandomTask('None'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFEFECE6)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.assignment_turned_in_rounded,
+                              size: 15,
+                              color: isAfternoon
+                                  ? const Color(0xFFEA580C)
+                                  : const Color(0xFF2563EB),
+                            ),
+                            const SizedBox(width: 5),
+                            const Text(
+                              'Random Task',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF191A20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.bolt,
-                          size: 15,
-                          color: isAfternoon
-                              ? const Color(0xFFEA580C)
-                              : const Color(0xFF578EF5),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          'Random Task',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF191A20),
+                    const SizedBox(width: 6),
+                    ...[
+                      {'label': 'Normal Task', 'type': 'None'},
+                      {'label': 'Day Routine', 'type': 'Day'},
+                      {'label': 'Week Routine', 'type': 'Week'},
+                      {'label': 'Month Routine', 'type': 'Month'},
+                    ].map((opt) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: GestureDetector(
+                          onTap: () => provider.openRandomTask(opt['type']!),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.88),
+                              borderRadius: BorderRadius.circular(11),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Text(
+                              opt['label']!,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      );
+                    }),
+                  ],
                 ),
               ),
 
@@ -642,24 +720,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  IconData _getAtmosphereIcon(String modeSetting, int activeIndex) {
-    if (modeSetting == 'auto') {
-      return Icons.hdr_auto_rounded;
-    }
-    if (activeIndex == 0) return Icons.wb_sunny_rounded;
-    if (activeIndex == 1) return Icons.wb_twilight_rounded;
-    return Icons.nightlight_round;
-  }
-
-  Color _getAtmosphereIconColor(String modeSetting, int activeIndex) {
-    if (modeSetting == 'auto') {
-      return const Color(0xFF38BDF8);
-    }
-    if (activeIndex == 0) return const Color(0xFF38BDF8);
-    if (activeIndex == 1) return const Color(0xFFF97316);
-    return const Color(0xFFFDE047);
-  }
-
   Widget _buildAtmosphereModeSelector(TaskProvider provider, bool isNight) {
     final currentMode = provider.atmosphereMode;
     final String currentTitle;
@@ -670,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'morning':
         currentTitle = 'Morning';
         currentIcon = Icons.wb_sunny_rounded;
-        currentIconColor = const Color(0xFF38BDF8);
+        currentIconColor = const Color(0xFFF59E0B);
         break;
       case 'afternoon':
         currentTitle = 'Afternoon';
@@ -689,143 +749,134 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Single Compact Place (Click to reveal all available modes)
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            setState(() {
-              _isModeExpanded = !_isModeExpanded;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: isNight
-                  ? const Color(0xFF1E293B).withOpacity(0.95)
-                  : Colors.white.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                width: 1,
+    // Compact Mode Switcher placed strictly BESIDE the Notification Bell!
+    // When tapped, it scrolls horizontally across Auto • Morning • Afternoon • Night inside the button!
+    if (!_isModeExpanded) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          setState(() {
+            _isModeExpanded = true;
+          });
+        },
+        child: Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: isNight
+                ? const Color(0xFF1E293B).withOpacity(0.95)
+                : Colors.white.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(currentIcon, size: 15, color: currentIconColor),
+              const SizedBox(width: 6),
+              Text(
+                currentTitle, // "Auto", "Morning", "Afternoon", "Night" ONLY on this switch button!
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isNight ? Colors.white : const Color(0xFF1E293B),
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(currentIcon, size: 16, color: currentIconColor),
-                const SizedBox(width: 8),
-                Text(
-                  currentTitle,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: isNight ? Colors.white : const Color(0xFF1E293B),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  _isModeExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  size: 16,
-                  color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.unfold_more_rounded,
+                size: 14,
+                color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
+            ],
           ),
         ),
+      );
+    }
 
-        // When clicked: expands and shows all available modes in that place!
-        AnimatedCrossFade(
-          firstChild: const SizedBox.shrink(),
-          secondChild: Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isNight
-                  ? const Color(0xFF1E293B).withOpacity(0.95)
-                  : Colors.white.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildModeItem(
-                    provider: provider,
-                    modeKey: 'auto',
-                    icon: Icons.brightness_auto_rounded,
-                    title: 'Auto',
-                    isSelected: currentMode == 'auto',
-                    isNight: isNight,
-                    activeIconColor: const Color(0xFF38BDF8),
-                    onSelect: () => setState(() => _isModeExpanded = false),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: _buildModeItem(
-                    provider: provider,
-                    modeKey: 'morning',
-                    icon: Icons.wb_sunny_rounded,
-                    title: 'Morning',
-                    isSelected: currentMode == 'morning',
-                    isNight: isNight,
-                    activeIconColor: const Color(0xFF38BDF8),
-                    onSelect: () => setState(() => _isModeExpanded = false),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: _buildModeItem(
-                    provider: provider,
-                    modeKey: 'afternoon',
-                    icon: Icons.wb_twilight_rounded,
-                    title: 'Afternoon',
-                    isSelected: currentMode == 'afternoon',
-                    isNight: isNight,
-                    activeIconColor: const Color(0xFFF97316),
-                    onSelect: () => setState(() => _isModeExpanded = false),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: _buildModeItem(
-                    provider: provider,
-                    modeKey: 'night',
-                    icon: Icons.nightlight_round,
-                    title: 'Night',
-                    isSelected: currentMode == 'night',
-                    isNight: isNight,
-                    activeIconColor: const Color(0xFFFDE047),
-                    onSelect: () => setState(() => _isModeExpanded = false),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          crossFadeState: _isModeExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 250),
+    return Container(
+      width: 162,
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      decoration: BoxDecoration(
+        color: isNight
+            ? const Color(0xFF1E293B).withOpacity(0.96)
+            : Colors.white.withOpacity(0.96),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isNight ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+          width: 1,
         ),
-      ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isNight ? 0.22 : 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildModeItem(
+              provider: provider,
+              modeKey: 'auto',
+              icon: Icons.brightness_auto_rounded,
+              title: 'Auto',
+              isSelected: currentMode == 'auto',
+              isNight: isNight,
+              activeIconColor: const Color(0xFF38BDF8),
+              onSelect: () => setState(() => _isModeExpanded = false),
+            ),
+            const SizedBox(width: 4),
+            _buildModeItem(
+              provider: provider,
+              modeKey: 'morning',
+              icon: Icons.wb_sunny_rounded,
+              title: 'Morning',
+              isSelected: currentMode == 'morning',
+              isNight: isNight,
+              activeIconColor: const Color(0xFFFDE047),
+              onSelect: () => setState(() => _isModeExpanded = false),
+            ),
+            const SizedBox(width: 4),
+            _buildModeItem(
+              provider: provider,
+              modeKey: 'afternoon',
+              icon: Icons.wb_twilight_rounded,
+              title: 'Afternoon',
+              isSelected: currentMode == 'afternoon',
+              isNight: isNight,
+              activeIconColor: const Color(0xFFF97316),
+              onSelect: () => setState(() => _isModeExpanded = false),
+            ),
+            const SizedBox(width: 4),
+            _buildModeItem(
+              provider: provider,
+              modeKey: 'night',
+              icon: Icons.nightlight_round,
+              title: 'Night',
+              isSelected: currentMode == 'night',
+              isNight: isNight,
+              activeIconColor: const Color(0xFFFDE047),
+              onSelect: () => setState(() => _isModeExpanded = false),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -846,23 +897,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected
               ? (isNight ? const Color(0xFF334155) : const Color(0xFF191A20))
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(isNight ? 0.35 : 0.15),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -870,16 +912,16 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(
               icon,
-              size: 15,
+              size: 13.5,
               color: isSelected
                   ? activeIconColor
                   : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
             ),
-            const SizedBox(width: 5),
+            const SizedBox(width: 4),
             Text(
-              title, // "Auto", "Morning", "Afternoon", "Night" (No "Good"!)
+              title,
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 color: isSelected
                     ? Colors.white
@@ -969,7 +1011,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Clean, Professional Subtitle
           Text(
             isTotalZero
-                ? 'Tap "+ New" below to schedule your first task.'
+                ? 'Tap "+ New Task" below to schedule your first task.'
                 : 'There are no tasks with "${provider.statusFilter}" status.',
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -1004,7 +1046,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    isTotalZero ? '+ New Task' : 'Show All Tasks',
+                    isTotalZero ? 'New Task' : 'Show All Tasks',
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,

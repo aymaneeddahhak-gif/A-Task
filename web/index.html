@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <base href="$FLUTTER_BASE_HREF">
@@ -122,29 +122,17 @@
     </div>
   </div>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) caches.delete(name);
-      });
-    }
     window.addEventListener('flutter-first-frame', function () {
       var splash = document.getElementById('splash-loading');
       if (splash) {
         splash.style.opacity = '0';
         setTimeout(function () {
           splash.remove();
-        }, 400);
+        }, 120);
       }
     });
   </script>
-  <script src="flutter_bootstrap.js?v=perf_realtime_v5" async></script>
+  <script src="flutter_bootstrap.js?v=fast_ui_v6" async></script>
 </body>
 </html>
 

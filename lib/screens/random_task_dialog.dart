@@ -95,7 +95,7 @@ class RandomTaskDialog extends StatelessWidget {
                         ),
                       ),
 
-                      // Routine Selector Option: Task | Day | Week | Month
+                      // Routine Selector Option: Normal Task | Day Routine | Week Routine | Month Routine
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                         child: Container(
@@ -104,19 +104,22 @@ class RandomTaskDialog extends StatelessWidget {
                             color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Row(
-                            children: [
-                              {'label': 'Task', 'type': 'None'},
-                              {'label': 'Day', 'type': 'Day'},
-                              {'label': 'Week', 'type': 'Week'},
-                              {'label': 'Month', 'type': 'Month'},
-                            ].map((opt) {
-                              final isSel = candidate.routineType == opt['type'];
-                              return Expanded(
-                                child: GestureDetector(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: [
+                                {'label': 'Normal Task', 'type': 'None'},
+                                {'label': 'Day Routine', 'type': 'Day'},
+                                {'label': 'Week Routine', 'type': 'Week'},
+                                {'label': 'Month Routine', 'type': 'Month'},
+                              ].map((opt) {
+                                final isSel = candidate.routineType == opt['type'];
+                                return GestureDetector(
                                   onTap: () => provider.rerollRandomTask(opt['type']!),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     decoration: BoxDecoration(
                                       color: isSel ? Colors.white : Colors.transparent,
                                       borderRadius: BorderRadius.circular(12),
@@ -134,15 +137,15 @@ class RandomTaskDialog extends StatelessWidget {
                                       opt['label']!,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 11.5,
                                         fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
                                         color: isSel ? const Color(0xFF0F172A) : const Color(0xFF64748B),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
                       ),
