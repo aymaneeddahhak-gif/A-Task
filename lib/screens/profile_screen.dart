@@ -1321,7 +1321,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _closeModal,
+              onPressed: () {
+                _closeModal();
+                widget.provider.showToast('Security preferences saved!');
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFA5A00),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -1375,6 +1378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 widget.provider.setSelectedLanguage(lang);
                 _closeModal();
+                widget.provider.showToast('Language updated to $lang');
               },
             );
           }),
@@ -1424,6 +1428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 widget.provider.setSelectedCurrency(curr);
                 _closeModal();
+                widget.provider.showToast('Currency updated to $curr');
               },
             );
           }),
@@ -1473,6 +1478,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 widget.provider.setSelectedTheme(th);
                 _closeModal();
+                widget.provider.showToast('Appearance theme set to $th');
               },
             );
           }),

@@ -7,11 +7,15 @@ import 'package:flutter/material.dart';
 class AnalyticsGraphCard extends StatefulWidget {
   final bool isNight;
   final VoidCallback? onUpgradeTap;
+  final int? completedCount;
+  final int? totalCount;
 
   const AnalyticsGraphCard({
     Key? key,
     this.isNight = false,
     this.onUpgradeTap,
+    this.completedCount,
+    this.totalCount,
   }) : super(key: key);
 
   @override
@@ -144,12 +148,12 @@ class _AnalyticsGraphCardState extends State<AnalyticsGraphCard> {
                   ),
                 ),
 
-                // Right Column: Big Number 1,930 + "Total Members"
+                // Right Column: Big Number + Metric Label
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '1,930',
+                      widget.completedCount != null ? '${widget.completedCount}' : '1,930',
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
@@ -160,7 +164,7 @@ class _AnalyticsGraphCardState extends State<AnalyticsGraphCard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Total Members',
+                      widget.completedCount != null ? 'Tasks Completed' : 'Total Members',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -350,6 +354,7 @@ class _BezierGraphPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     canvas.drawLine(Offset(junX, 36), Offset(junX, h - 6), guidePaint);
+    canvas.drawCircle(Offset(junX, junY), 3.5, Paint()..color = isNight ? Colors.white : const Color(0xFF0F172A));
 
     // 3. Multi-stop Gradient Stroke
     // Goes from salmon/red -> crimson -> purple -> sky blue (matching sanbox/graph.png)
