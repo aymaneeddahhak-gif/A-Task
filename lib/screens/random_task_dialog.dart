@@ -71,7 +71,7 @@ class RandomTaskDialog extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Random Task Suggested',
+                                      'Quick Task Suggested',
                                       style: TextStyle(
                                         fontSize: 15.5,
                                         fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class RandomTaskDialog extends StatelessWidget {
                                     ),
                                     SizedBox(height: 2),
                                     Text(
-                                      'Review before adding to your day',
+                                      'Review before adding to your schedule',
                                       style: TextStyle(fontSize: 11.5, color: Color(0xFF8E8E93)),
                                     ),
                                   ],

@@ -623,7 +623,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 6),
                         const Text(
-                          'Random Task',
+                          'Quick Task',
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.bold,
