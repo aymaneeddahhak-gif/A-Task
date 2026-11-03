@@ -11,6 +11,7 @@ import 'screens/add_task_dialog.dart';
 import 'screens/task_detail_dialog.dart';
 import 'screens/random_task_dialog.dart';
 import 'screens/design_sandbox_screen.dart';
+import 'services/portfolio_nav.dart';
 
 void main() {
   runApp(const TaskPlannerFlutterApp());
@@ -192,12 +193,12 @@ class _MainTabContainerState extends State<MainTabContainer> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Left Side Empty Space: Big LIVE DEMO + Brand info + Portfolio footer
+                  // Left Side Space: Back button + Big LIVE DEMO + Recruiter text + Mascot & Logo
                   Expanded(
                     child: Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.topLeft,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 48.0, right: 24.0),
+                        padding: const EdgeInsets.only(left: 48.0, top: 16.0, right: 24.0),
                         child: _buildLeftSideBranding(),
                       ),
                     ),
@@ -222,12 +223,53 @@ class _MainTabContainerState extends State<MainTabContainer> {
   Widget _buildLeftSideBranding() {
     return FittedBox(
       fit: BoxFit.scaleDown,
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.topLeft,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Big "LIVE DEMO" text above all text (dot removed)
+          // 0. Back to Portfolio Action Button (Top-Left Screen)
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: openPortfolio,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.arrow_back_rounded, size: 15, color: Color(0xFF0F172A)),
+                    SizedBox(width: 7),
+                    Text(
+                      'Back to Portfolio',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // 1. Big "LIVE DEMO" text
           const Text(
             'LIVE DEMO',
             style: TextStyle(
@@ -239,50 +281,50 @@ class _MainTabContainerState extends State<MainTabContainer> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
 
-          // 2. App name "A-Task" (image removed)
+          // 2. App name "A-Task"
           const Text(
             'A-Task',
             style: TextStyle(
-              fontSize: 36,
+              fontSize: 34,
               fontWeight: FontWeight.w900,
               letterSpacing: -1.0,
               color: Color(0xFF0F172A),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // 3. Subtitle / Tagline
           const Text(
-            'A task planner app  •  Make today more productive',
+            'Personal Planner & Real-Time Routine Engine',
             style: TextStyle(
               fontSize: 15.5,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF475569),
             ),
           ),
 
           const SizedBox(height: 12),
 
-          // 3B. Short Browser Showcase Description
+          // 3B. Recruiter-Focused Browser Showcase Description
           const SizedBox(
-            width: 390,
+            width: 410,
             child: Text(
-              'Interactive mobile app preview showcased in a live phone frame directly in your browser — explore real-time routines, dynamic day/night atmospheres, and AI task planning.',
+              'Interactive Flutter Web showcase running in real time inside an adaptive mobile viewport simulator. Experience live diurnal atmospheres, responsive routine workflows, and smooth 60 FPS mobile architecture directly in your browser.',
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF94A3B8),
-                height: 1.45,
+                color: Color(0xFF64748B),
+                height: 1.5,
               ),
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 28),
 
-          // 4. Portfolio-Style Minimalist Footer: "Created by" + mascot + logosultion
+          // 4. Portfolio-Style Minimalist Footer: "Created by" + Clickable Mascot + Clickable Logo
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -297,33 +339,51 @@ class _MainTabContainerState extends State<MainTabContainer> {
                 ),
               ),
               const SizedBox(width: 14),
-              // Mascot
-              Image.asset(
-                'assets/images/mascot.png',
-                height: 48,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Image.asset(
-                  'mascot.png',
-                  height: 48,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Text('⚡', style: TextStyle(fontSize: 24)),
+              // Clickable Mascot -> guides to portfolio
+              Tooltip(
+                message: 'Visit Portfolio',
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: openPortfolio,
+                    child: Image.asset(
+                      'assets/images/mascot.png',
+                      height: 48,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'mascot.png',
+                        height: 48,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Text('⚡', style: TextStyle(fontSize: 24)),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Logosolution
-              Image.asset(
-                'assets/images/logosultion.png',
-                height: 38,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Image.asset(
-                  'logosultion.png',
-                  height: 38,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Image.asset(
-                    'assets/images/logo.png',
-                    height: 38,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Text('Logosolution', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              // Clickable Logosolution -> guides to portfolio
+              Tooltip(
+                message: 'Visit Portfolio',
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: openPortfolio,
+                    child: Image.asset(
+                      'assets/images/logosultion.png',
+                      height: 38,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'logosultion.png',
+                        height: 38,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/images/logo.png',
+                          height: 38,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Text('Logosolution', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -38,22 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAfternoon = mode == 1;
     final Color softDownColor = provider.softAtmosphereColor;
 
-    // Top-Left Greeting Text & Icon (Always shows Good Morning / Good Afternoon / Good Evening for all modes!)
+    // Top-Left Greeting Text (Always shows Good Morning / Good Afternoon / Good Evening for all modes!)
     final String greetingLabel;
-    final IconData greetingIcon;
-    final Color greetingIconColor;
     if (mode == 0) {
       greetingLabel = 'Good Morning';
-      greetingIcon = Icons.wb_sunny_rounded;
-      greetingIconColor = const Color(0xFFD97706); // Warm morning sunshine gold/amber
     } else if (mode == 1) {
       greetingLabel = 'Good Afternoon';
-      greetingIcon = Icons.wb_twilight_rounded;
-      greetingIconColor = const Color(0xFFEA580C); // Warm afternoon sunset orange
     } else {
       greetingLabel = 'Good Evening';
-      greetingIcon = Icons.nightlight_round;
-      greetingIconColor = const Color(0xFF38BDF8); // Evening sky blue
     }
     // Dark crisp text in daylight modes, crisp white in night mode
     final Color greetingTextColor = isNight ? Colors.white : const Color(0xFF0F172A);
@@ -319,26 +311,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    greetingIcon,
-                                    size: 14,
-                                    color: greetingIconColor,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    greetingLabel, // "Good Morning", "Good Afternoon", "Good Evening"
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: greetingTextColor, // Solid dark #0F172A in daylight
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.1,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                greetingLabel, // "Good Morning", "Good Afternoon", "Good Evening"
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: 13.0,
+                                  color: greetingTextColor, // Solid dark #0F172A in daylight, white in night
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.1,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
