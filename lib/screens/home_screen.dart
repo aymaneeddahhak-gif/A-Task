@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/task_model.dart';
 import '../state/task_provider.dart';
 import '../widgets/circular_progress_ring.dart';
 import '../widgets/task_card.dart';
@@ -15,8 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isModeExpanded = false;
-
   @override
   Widget build(BuildContext context) {
     final provider = widget.provider;
@@ -44,22 +41,24 @@ class _HomeScreenState extends State<HomeScreen> {
     // Top-Left Greeting Text & Icon (Always shows Good Morning / Good Afternoon / Good Evening for all modes!)
     final String greetingLabel;
     final IconData greetingIcon;
-    final Color greetingColor;
+    final Color greetingIconColor;
     if (mode == 0) {
       greetingLabel = 'Good Morning';
       greetingIcon = Icons.wb_sunny_rounded;
-      greetingColor = const Color(0xFFD97706); // Warm morning sunshine gold/amber
+      greetingIconColor = const Color(0xFFD97706); // Warm morning sunshine gold/amber
     } else if (mode == 1) {
       greetingLabel = 'Good Afternoon';
       greetingIcon = Icons.wb_twilight_rounded;
-      greetingColor = const Color(0xFFEA580C);
+      greetingIconColor = const Color(0xFFEA580C); // Warm afternoon sunset orange
     } else {
       greetingLabel = 'Good Evening';
       greetingIcon = Icons.nightlight_round;
-      greetingColor = const Color(0xFF38BDF8);
+      greetingIconColor = const Color(0xFF38BDF8); // Evening sky blue
     }
-    final Color nameColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
-    final Color headlineColor = isNight ? Colors.white : const Color(0xFF1B1B1F);
+    // Dark crisp text in daylight modes, crisp white in night mode
+    final Color greetingTextColor = isNight ? Colors.white : const Color(0xFF0F172A);
+    final Color nameColor = isNight ? Colors.white : const Color(0xFF0F172A);
+    final Color headlineColor = isNight ? Colors.white : const Color(0xFF0F172A);
 
     // 85% Atmosphere Spread Gradients:
     // The main vibrant atmospheric color stays fixed at the top and dissolves into the soft down-page color!
@@ -325,21 +324,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Icon(
                                     greetingIcon,
-                                    size: 13,
-                                    color: greetingColor,
+                                    size: 14,
+                                    color: greetingIconColor,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      greetingLabel, // "Good Morning", "Good Afternoon", "Good Evening"
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                        color: greetingColor,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.1,
-                                      ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    greetingLabel, // "Good Morning", "Good Afternoon", "Good Evening"
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: greetingTextColor, // Solid dark #0F172A in daylight
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.1,
                                     ),
                                   ),
                                 ],
@@ -615,82 +611,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 12),
 
-              // Random Task Button (with Task Sign) + Quick Selector: Normal Task | Day Routine | Week Routine | Month Routine
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => provider.openRandomTask('None'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFEFECE6)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+              // Random Task Button (Clean single button with task sign)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () => provider.openRandomTask('None'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.assignment_turned_in_rounded,
-                              size: 15,
-                              color: isAfternoon
-                                  ? const Color(0xFFEA580C)
-                                  : const Color(0xFF2563EB),
-                            ),
-                            const SizedBox(width: 5),
-                            const Text(
-                              'Random Task',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF191A20),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    ...[
-                      {'label': 'Normal Task', 'type': 'None'},
-                      {'label': 'Day Routine', 'type': 'Day'},
-                      {'label': 'Week Routine', 'type': 'Week'},
-                      {'label': 'Month Routine', 'type': 'Month'},
-                    ].map((opt) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: GestureDetector(
-                          onTap: () => provider.openRandomTask(opt['type']!),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.88),
-                              borderRadius: BorderRadius.circular(11),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Text(
-                              opt['label']!,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
-                              ),
-                            ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.assignment_turned_in_rounded,
+                          size: 16,
+                          color: isAfternoon
+                              ? const Color(0xFFEA580C)
+                              : const Color(0xFF2563EB),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Random Task',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
                           ),
                         ),
-                      );
-                    }),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
 
@@ -749,26 +710,70 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
     }
 
-    // Compact Mode Switcher placed strictly BESIDE the Notification Bell!
-    // When tapped, it scrolls horizontally across Auto • Morning • Afternoon • Night inside the button!
-    if (!_isModeExpanded) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          setState(() {
-            _isModeExpanded = true;
-          });
-        },
+    // Dropdown Mode Switcher placed strictly BESIDE the Notification Bell!
+    // Shows all 4 modes vertically on click for easy laptop mouse testing,
+    // and keeps the active mode name ONLY on this button without compressing the greeting.
+    return Theme(
+      data: Theme.of(context).copyWith(
+        popupMenuTheme: PopupMenuThemeData(
+          color: isNight ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isNight ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+            ),
+          ),
+          elevation: 10,
+        ),
+      ),
+      child: PopupMenuButton<String>(
+        tooltip: 'Switch Atmosphere Mode',
+        offset: const Offset(0, 44),
+        onSelected: (val) => provider.setAtmosphereMode(val),
+        itemBuilder: (ctx) => [
+          _buildPopupItem(
+            value: 'auto',
+            label: 'Auto (Time-based)',
+            icon: Icons.brightness_auto_rounded,
+            iconColor: const Color(0xFF0284C7),
+            isSelected: currentMode == 'auto',
+            isNight: isNight,
+          ),
+          _buildPopupItem(
+            value: 'morning',
+            label: 'Morning Mode',
+            icon: Icons.wb_sunny_rounded,
+            iconColor: const Color(0xFFF59E0B),
+            isSelected: currentMode == 'morning',
+            isNight: isNight,
+          ),
+          _buildPopupItem(
+            value: 'afternoon',
+            label: 'Afternoon Mode',
+            icon: Icons.wb_twilight_rounded,
+            iconColor: const Color(0xFFEA580C),
+            isSelected: currentMode == 'afternoon',
+            isNight: isNight,
+          ),
+          _buildPopupItem(
+            value: 'night',
+            label: 'Night Mode',
+            icon: Icons.nightlight_round,
+            iconColor: const Color(0xFFEAB308),
+            isSelected: currentMode == 'night',
+            isNight: isNight,
+          ),
+        ],
         child: Container(
           height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: isNight
                 ? const Color(0xFF1E293B).withOpacity(0.95)
                 : Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isNight ? const Color(0xFF475569) : const Color(0xFFEFECE6),
+              color: isNight ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
               width: 1,
             ),
             boxShadow: [
@@ -783,153 +788,60 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(currentIcon, size: 15, color: currentIconColor),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Text(
-                currentTitle, // "Auto", "Morning", "Afternoon", "Night" ONLY on this switch button!
+                currentTitle, // "Auto", "Morning", "Afternoon", "Night" placed ONLY on this button!
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: isNight ? Colors.white : const Color(0xFF1E293B),
+                  color: isNight ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
               const SizedBox(width: 4),
               Icon(
-                Icons.unfold_more_rounded,
-                size: 14,
+                Icons.keyboard_arrow_down_rounded,
+                size: 16,
                 color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
             ],
           ),
         ),
-      );
-    }
-
-    return Container(
-      width: 162,
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-      decoration: BoxDecoration(
-        color: isNight
-            ? const Color(0xFF1E293B).withOpacity(0.96)
-            : Colors.white.withOpacity(0.96),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isNight ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isNight ? 0.22 : 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildModeItem(
-              provider: provider,
-              modeKey: 'auto',
-              icon: Icons.brightness_auto_rounded,
-              title: 'Auto',
-              isSelected: currentMode == 'auto',
-              isNight: isNight,
-              activeIconColor: const Color(0xFF38BDF8),
-              onSelect: () => setState(() => _isModeExpanded = false),
-            ),
-            const SizedBox(width: 4),
-            _buildModeItem(
-              provider: provider,
-              modeKey: 'morning',
-              icon: Icons.wb_sunny_rounded,
-              title: 'Morning',
-              isSelected: currentMode == 'morning',
-              isNight: isNight,
-              activeIconColor: const Color(0xFFFDE047),
-              onSelect: () => setState(() => _isModeExpanded = false),
-            ),
-            const SizedBox(width: 4),
-            _buildModeItem(
-              provider: provider,
-              modeKey: 'afternoon',
-              icon: Icons.wb_twilight_rounded,
-              title: 'Afternoon',
-              isSelected: currentMode == 'afternoon',
-              isNight: isNight,
-              activeIconColor: const Color(0xFFF97316),
-              onSelect: () => setState(() => _isModeExpanded = false),
-            ),
-            const SizedBox(width: 4),
-            _buildModeItem(
-              provider: provider,
-              modeKey: 'night',
-              icon: Icons.nightlight_round,
-              title: 'Night',
-              isSelected: currentMode == 'night',
-              isNight: isNight,
-              activeIconColor: const Color(0xFFFDE047),
-              onSelect: () => setState(() => _isModeExpanded = false),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildModeItem({
-    required TaskProvider provider,
-    required String modeKey,
+  PopupMenuItem<String> _buildPopupItem({
+    required String value,
+    required String label,
     required IconData icon,
-    required String title,
+    required Color iconColor,
     required bool isSelected,
     required bool isNight,
-    required Color activeIconColor,
-    VoidCallback? onSelect,
   }) {
-    return GestureDetector(
-      onTap: () {
-        provider.setAtmosphereMode(modeKey);
-        if (onSelect != null) onSelect();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isNight ? const Color(0xFF334155) : const Color(0xFF191A20))
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13.5,
-              color: isSelected
-                  ? activeIconColor
-                  : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              title,
+    return PopupMenuItem<String>(
+      value: value,
+      height: 42,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                color: isSelected
-                    ? Colors.white
-                    : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isNight ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-          ],
-        ),
+          ),
+          if (isSelected)
+            Icon(
+              Icons.check_rounded,
+              size: 16,
+              color: isNight ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+            ),
+        ],
       ),
     );
   }

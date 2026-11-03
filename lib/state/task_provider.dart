@@ -785,47 +785,106 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // General Random Task Generator (General everyday productivity & routine options: Day, Week, Month)
+  // General Random Task Generator (Tailored productivity & routine options: Normal, Day Routine, Week Routine, Month Routine)
   TaskModel generateRandomTaskCandidate({String routineType = 'None'}) {
-    final randomTitles = [
-      'Deep Focus & High-Impact Work',
-      'Clear Email Inbox & Messages',
-      'Daily Workout & Stretching',
-      'Plan Tomorrow\'s Top 3 Goals',
-      'Review Weekly Budget & Expenses',
-      'Declutter Desk & Workspace',
-      'Read 15 Pages of a Book',
-      '30-Min Outdoor Walk & Hydrate',
-      'Sort Desktop & Downloads Folder',
-      'Healthy Meal Prep & Nutrition',
-      'Call Family or Check In on Friend',
-      'Backup Important Files & Notes',
-      'Evening Reflection & Journaling',
-      'Mindful Breathing & Reset Break',
-      'Organize Weekly Project Checklist',
-    ];
-    final randomDescriptions = [
-      'Uninterrupted focus session to make steady, meaningful progress.',
-      'Process unread communication and reach zero unread messages.',
-      'Recharge physical energy with movement and mobility exercises.',
-      'Identify key outcomes and schedule them for tomorrow.',
-      'Keep track of essential expenses, upcoming bills, and financial goals.',
-      'Clean up physical and digital surfaces to foster clarity.',
-      'Cultivate consistent reading habits and expand personal knowledge.',
-      'Step outside into fresh air and natural daylight to refresh the mind.',
-      'Organize digital assets, receipts, and project assets neatly.',
-      'Dedicate quiet time to mental relaxation, balance, and gratitude.',
-    ];
-    final randomProjects = [
-      'Personal',
-      'Daily Routine',
-      'Productivity',
-      'Health & Fitness',
-      'Finance',
-      'Home & Life',
-    ];
-    final randomThemes = ['blue', 'peach', 'mint', 'purple', 'pink'];
     final rand = Random();
+    final List<String> titles;
+    final List<String> descriptions;
+    final String dateStr;
+    final String tagStr;
+    final String projectStr;
+    final String defaultPriority;
+    final String defaultTheme;
+
+    if (routineType == 'Day') {
+      titles = [
+        'Morning Outdoor Run & Hydrate',
+        'Read 15 Pages of a Book',
+        'Daily Mobility & Core Workout',
+        'Evening Reflection & Daily Log',
+        'Mindful Reset & Meditation',
+        'Healthy Meal Prep & Nutrition',
+      ];
+      descriptions = [
+        'Start the day with movement, sunlight exposure, and proper hydration.',
+        'Consistently expand mindset and knowledge one chapter at a time.',
+        'Recharge physical vitality with mobility exercises and stretching.',
+        'End-of-day journal review to track habits, learnings, and gratitude.',
+        '10-minute mindful breathing reset to quiet mental chatter.',
+        'Prepare nutritious, energy-sustaining meals for steady focus.',
+      ];
+      dateStr = 'Daily • Every Day';
+      tagStr = 'Day Routine,Habit,Wellness';
+      projectStr = 'Daily Routine';
+      defaultPriority = 'Medium';
+      defaultTheme = 'peach';
+    } else if (routineType == 'Week') {
+      titles = [
+        'Weekly Studies & Skill Mastery',
+        'Organize Weekly Project Checklist',
+        'Weekly Deep Cleaning & Declutter',
+        'Weekly Team Milestone Review',
+        'Weekly Meal & Workout Planning',
+      ];
+      descriptions = [
+        'Dedicated weekly learning block to master technical concepts and tools.',
+        'Structure deliverables, calibrate deadlines, and clear roadblocks for next week.',
+        'Clean surfaces and declutter digital downloads folder for a fresh start.',
+        'Review progress against sprint goals and align next priorities.',
+        'Map out balanced routines and fitness goals for the coming week.',
+      ];
+      dateStr = 'Weekly • Every ${DateFormat('EEE').format(_now)}';
+      tagStr = 'Week Routine,Studies,Goals';
+      projectStr = 'Weekly Routine';
+      defaultPriority = 'Medium';
+      defaultTheme = 'mint';
+    } else if (routineType == 'Month') {
+      titles = [
+        'Review Monthly Budget & Finances',
+        'Monthly Habit & Milestone Audit',
+        'Digital Backup & Archival Sweep',
+        'Long-Term Strategic Planning',
+        'Monthly System & Home Maintenance',
+      ];
+      descriptions = [
+        'Track monthly cash flow, subscriptions, savings, and upcoming expenses.',
+        'Evaluate habit consistency, monthly metrics, and set next month\'s goals.',
+        'Archive completed projects, clean cloud drives, and back up credentials.',
+        'Step back to review high-level progress and big picture aspirations.',
+        'Inspect equipment, software updates, and essential workspace needs.',
+      ];
+      dateStr = 'Monthly • Every ${DateFormat('d').format(_now)}th';
+      tagStr = 'Month Routine,Finances,Review';
+      projectStr = 'Monthly Routine';
+      defaultPriority = 'Medium';
+      defaultTheme = 'purple';
+    } else {
+      // Normal: Single / Locked In Task
+      titles = [
+        'Deep Focus Sprint (Lock In)',
+        'Execute High-Priority Deliverable',
+        'Clear Email Inbox & Critical Replies',
+        'Code Review & Architecture Refactor',
+        'Complete Design Handover',
+        'Client Proposal & Strategy Deck',
+      ];
+      descriptions = [
+        'Uninterrupted focus session to lock in and finish an urgent single task.',
+        'Execute core deliverables with high quality and zero distractions.',
+        'Process unread communications and reach inbox zero efficiently.',
+        'Audit pull requests, simplify modules, and refine application logic.',
+        'Finalize UI components, export design tokens, and update assets.',
+        'Synthesize findings into a high-impact presentation deck.',
+      ];
+      dateStr = 'Today';
+      tagStr = 'Normal,Focus,Lock In';
+      projectStr = 'Locked In';
+      defaultPriority = 'High';
+      defaultTheme = 'blue';
+    }
+
+    final randomThemes = ['blue', 'peach', 'mint', 'purple', 'pink'];
+    final effectiveTheme = rand.nextBool() ? defaultTheme : randomThemes[rand.nextInt(randomThemes.length)];
 
     final nextId =
         (_tasks.isNotEmpty
@@ -841,39 +900,17 @@ class TaskProvider extends ChangeNotifier {
         ? '${(endH - 12).toString().padLeft(2, '0')}:00 PM'
         : '${endH.toString().padLeft(2, '0')}:00 ${endH >= 12 ? 'PM' : 'AM'}';
 
-    String dateStr;
-    String tagStr;
-    String projectStr;
-
-    if (routineType == 'Day') {
-      dateStr = 'Daily • Every Day';
-      tagStr = 'Daily,Routine,Wellness';
-      projectStr = 'Daily Routine';
-    } else if (routineType == 'Week') {
-      dateStr = 'Weekly • Every ${DateFormat('EEE').format(_now)}';
-      tagStr = 'Weekly,Routine,Goals';
-      projectStr = 'Weekly Routine';
-    } else if (routineType == 'Month') {
-      dateStr = 'Monthly • Every ${DateFormat('d').format(_now)}th';
-      tagStr = 'Monthly,Routine,Review';
-      projectStr = 'Monthly Routine';
-    } else {
-      dateStr = 'Today';
-      tagStr = 'General,Focus';
-      projectStr = randomProjects[rand.nextInt(randomProjects.length)];
-    }
-
     return TaskModel(
       id: nextId,
-      title: randomTitles[rand.nextInt(randomTitles.length)],
-      description: randomDescriptions[rand.nextInt(randomDescriptions.length)],
+      title: titles[rand.nextInt(titles.length)],
+      description: descriptions[rand.nextInt(descriptions.length)],
       dateString: dateStr,
       startTime: startHourStr,
       endTime: endHourStr,
-      priority: rand.nextBool() ? 'High' : 'Medium',
+      priority: defaultPriority,
       project: projectStr,
       tags: tagStr,
-      colorTheme: randomThemes[rand.nextInt(randomThemes.length)],
+      colorTheme: effectiveTheme,
       timeSection: TaskModel.inferTimeSection(startHourStr),
       status: 'In Progress',
       isCompleted: false,

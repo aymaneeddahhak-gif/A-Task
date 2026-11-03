@@ -157,34 +157,41 @@ class TaskCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Clean Duration Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 4,
+                  // Clean Duration Badge & Routine Type Badge (Normal | Day Routine | Week Routine | Month Routine)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.schedule, size: 12, color: theme.accentColor),
-                        const SizedBox(width: 5),
-                        Text(
-                          task.cleanDuration,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.schedule, size: 12, color: theme.accentColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              task.cleanDuration,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 6),
+                      _buildRoutineBadge(task.routineType),
+                    ],
                   ),
 
                   // Status Pill & Star
@@ -416,6 +423,83 @@ class TaskCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRoutineBadge(String routineType) {
+    final String label;
+    final IconData icon;
+    final Color bgColor;
+    final Color borderColor;
+    final Color textColor;
+    final Color iconColor;
+
+    switch (routineType) {
+      case 'Day':
+        label = 'Day Routine';
+        icon = Icons.repeat_rounded;
+        bgColor = const Color(0xFFFEF3C7);
+        borderColor = const Color(0xFFFDE68A);
+        textColor = const Color(0xFF92400E);
+        iconColor = const Color(0xFFD97706);
+        break;
+      case 'Week':
+        label = 'Week Routine';
+        icon = Icons.date_range_rounded;
+        bgColor = const Color(0xFFEEF2FF);
+        borderColor = const Color(0xFFC7D2FE);
+        textColor = const Color(0xFF3730A3);
+        iconColor = const Color(0xFF4F46E5);
+        break;
+      case 'Month':
+        label = 'Month Routine';
+        icon = Icons.calendar_month_rounded;
+        bgColor = const Color(0xFFF3E8FF);
+        borderColor = const Color(0xFFE9D5FF);
+        textColor = const Color(0xFF6B21A8);
+        iconColor = const Color(0xFF9333EA);
+        break;
+      case 'None':
+      default:
+        label = 'Normal';
+        icon = Icons.bolt_rounded;
+        bgColor = const Color(0xFFF1F5F9);
+        borderColor = const Color(0xFFE2E8F0);
+        textColor = const Color(0xFF334155);
+        iconColor = const Color(0xFF0284C7);
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11.5, color: iconColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: -0.1,
+            ),
+          ),
+        ],
       ),
     );
   }

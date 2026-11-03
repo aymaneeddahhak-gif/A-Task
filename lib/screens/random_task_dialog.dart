@@ -95,7 +95,7 @@ class RandomTaskDialog extends StatelessWidget {
                         ),
                       ),
 
-                      // Routine Selector Option: Normal Task | Day Routine | Week Routine | Month Routine
+                      // Routine Selector Option: Normal | Day Routine | Week Routine | Month Routine (All visible, no horizontal scroll)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                         child: Container(
@@ -103,49 +103,54 @@ class RandomTaskDialog extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            physics: const BouncingScrollPhysics(),
-                            child: Row(
-                              children: [
-                                {'label': 'Normal Task', 'type': 'None'},
-                                {'label': 'Day Routine', 'type': 'Day'},
-                                {'label': 'Week Routine', 'type': 'Week'},
-                                {'label': 'Month Routine', 'type': 'Month'},
-                              ].map((opt) {
-                                final isSel = candidate.routineType == opt['type'];
-                                return GestureDetector(
-                                  onTap: () => provider.rerollRandomTask(opt['type']!),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              {'label': 'Normal', 'type': 'None'},
+                              {'label': 'Day Routine', 'type': 'Day'},
+                              {'label': 'Week Routine', 'type': 'Week'},
+                              {'label': 'Month Routine', 'type': 'Month'},
+                            ].map((opt) {
+                              final isSel = candidate.routineType == opt['type'];
+                              return Expanded(
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => provider.rerollRandomTask(opt['type'] as String),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
                                     decoration: BoxDecoration(
                                       color: isSel ? Colors.white : Colors.transparent,
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: isSel
                                           ? [
                                               BoxShadow(
-                                                color: Colors.black.withOpacity(0.06),
+                                                color: Colors.black.withOpacity(0.08),
                                                 blurRadius: 4,
                                                 offset: const Offset(0, 2),
                                               ),
                                             ]
                                           : null,
                                     ),
-                                    child: Text(
-                                      opt['label']!,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
-                                        color: isSel ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                                    child: Center(
+                                      child: Text(
+                                        opt['label'] as String,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: isSel ? FontWeight.w800 : FontWeight.w600,
+                                          color: isSel ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                                          letterSpacing: -0.2,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                );
-                              }).toList(),
-                            ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
                       ),

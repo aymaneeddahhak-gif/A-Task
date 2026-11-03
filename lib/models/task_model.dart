@@ -183,6 +183,20 @@ class TaskModel {
 
   String get cleanDuration => _cachedCleanDuration;
 
+  String get routineLabel {
+    switch (routineType) {
+      case 'Day':
+        return 'Day Routine';
+      case 'Week':
+        return 'Week Routine';
+      case 'Month':
+        return 'Month Routine';
+      case 'None':
+      default:
+        return 'Normal';
+    }
+  }
+
   int? get startMinutesOfDay => _cachedStartMinutes;
 
   int? get endMinutesOfDay => _cachedEndMinutes;
