@@ -1056,15 +1056,15 @@ class TaskProvider extends ChangeNotifier {
     });
   }
 
-  // Soft atmospheric background tint matching the active mode
+  // Atmospheric background tint matching the active mode
   Color get softAtmosphereColor {
     final mode = activeAtmosphereIndex;
     if (mode == 2) {
-      return const Color(0xFFF1F5F9); // Soft Cool Slate Tint
+      return const Color(0xFF0F172A); // Rich Deep Midnight Navy Tint
     } else if (mode == 1) {
-      return const Color(0xFFFAF3EC); // Soft Warm Sunset Golden Glow
+      return const Color(0xFFFDE0C4); // Rich Warm Sunset Apricot Glow
     } else {
-      return const Color(0xFFF2F7FC); // Soft Crisp Morning Sky Blue Tint
+      return const Color(0xFFD7ECFD); // Rich Fresh Morning Sky Blue Tint
     }
   }
 

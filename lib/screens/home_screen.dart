@@ -66,46 +66,46 @@ class _HomeScreenState extends State<HomeScreen> {
     final Color nameColor = isNight ? Colors.white : const Color(0xFF0F172A);
     final Color headlineColor = isNight ? Colors.white : const Color(0xFF0F172A);
 
-    // Seamless Feathered Atmosphere Spread Gradients:
-    // Blends smoothly from the sky colors down into softDownColor with 100% invisible feathering!
+    // Highly Visual Mode Gradient Palettes with Seamless Feathered Fade:
+    // Blends smoothly from vibrant atmospheric sky down into the distinctive mode softDownColor!
     final List<Color> gradientColors;
     final List<double> stops;
     if (mode == 0) {
-      // Sunny Morning Sky: Sky blue -> soft cyan -> warm sunshine gold -> feathered fade into base fill
+      // Sunny Morning Sky: Rich sky blue -> bright cyan -> warm sunshine gold -> feathered fade into distinct daylight morning blue
       gradientColors = [
+        const Color(0xFF60A5FA),
         const Color(0xFF93C5FD),
         const Color(0xFFBAE6FD),
-        const Color(0xFFFEF3C7).withOpacity(0.65),
-        const Color(0xFFE0F2FE).withOpacity(0.70),
-        softDownColor.withOpacity(0.60),
+        const Color(0xFFFEF3C7).withOpacity(0.60),
+        const Color(0xFFC7E3FD),
         softDownColor.withOpacity(0.92),
         softDownColor,
       ];
       stops = const [0.0, 0.22, 0.44, 0.65, 0.82, 0.94, 1.0];
     } else if (mode == 1) {
-      // Warm Sunset Afternoon: Sunset amber & orange -> golden apricot -> feathered fade into base fill
+      // Warm Sunset Afternoon: Vibrant sunset orange/amber -> warm golden apricot -> feathered fade into distinct sunset peach
       gradientColors = [
-        const Color(0xFFFF6433),
-        const Color(0xFFFFA040),
-        const Color(0xFFFFD49E).withOpacity(0.70),
-        const Color(0xFFFFF1E0).withOpacity(0.70),
-        softDownColor.withOpacity(0.60),
+        const Color(0xFFFF5722),
+        const Color(0xFFFF8533),
+        const Color(0xFFFFB566),
+        const Color(0xFFFFCCA3).withOpacity(0.75),
+        const Color(0xFFFEDBB8),
         softDownColor.withOpacity(0.92),
         softDownColor,
       ];
       stops = const [0.0, 0.22, 0.44, 0.65, 0.82, 0.94, 1.0];
     } else {
-      // Deep Midnight Dark Blue with Stars -> twilight dusk mist -> feathered fade into base fill
+      // Deep Midnight Dark Blue with Stars -> twilight dusk navy -> feathered fade into distinct deep midnight dark navy
       gradientColors = [
-        const Color(0xFF0B1021),
-        const Color(0xFF0F172A),
-        const Color(0xFF1E293B).withOpacity(0.80),
-        const Color(0xFF475569).withOpacity(0.40),
-        const Color(0xFF94A3B8).withOpacity(0.20),
-        softDownColor.withOpacity(0.90),
+        const Color(0xFF060913),
+        const Color(0xFF0B1224),
+        const Color(0xFF111C36),
+        const Color(0xFF162444).withOpacity(0.85),
+        const Color(0xFF121B30),
+        softDownColor.withOpacity(0.92),
         softDownColor,
       ];
-      stops = const [0.0, 0.22, 0.44, 0.65, 0.80, 0.93, 1.0];
+      stops = const [0.0, 0.22, 0.44, 0.65, 0.82, 0.94, 1.0];
     }
 
     return Stack(
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
             final overscroll = scrollOffset < 0 ? -scrollOffset : 0.0;
             final topPos = scrollOffset > 0 ? -scrollOffset : 0.0;
-            final totalHeight = 440.0 + overscroll;
+            final totalHeight = 480.0 + overscroll;
 
             return Positioned(
               top: topPos,
@@ -577,12 +577,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Plans & Tasks',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B1B1F),
+                      color: isNight ? Colors.white : const Color(0xFF1B1B1F),
                     ),
                   ),
 
@@ -591,22 +591,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isNight ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: Colors.black.withOpacity(0.12),
+                        color: isNight ? const Color(0xFF475569) : Colors.black.withOpacity(0.12),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withOpacity(isNight ? 0.2 : 0.02),
                           blurRadius: 4,
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.filter_list,
                       size: 20,
-                      color: Color(0xFF191A20),
+                      color: isNight ? Colors.white : const Color(0xFF191A20),
                     ),
                   ),
                 ],
@@ -620,22 +620,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildStatusPill('All', provider.allCount),
+                    _buildStatusPill('All', provider.allCount, isNight),
                     const SizedBox(width: 8),
-                    _buildStatusPill('To Do', provider.todoCount),
+                    _buildStatusPill('To Do', provider.todoCount, isNight),
                     const SizedBox(width: 8),
-                    _buildStatusPill('In Progress', provider.inProgressCount),
+                    _buildStatusPill('In Progress', provider.inProgressCount, isNight),
                     const SizedBox(width: 8),
-                    _buildStatusPill('In Review', provider.inReviewCount),
+                    _buildStatusPill('In Review', provider.inReviewCount, isNight),
                     const SizedBox(width: 8),
-                    _buildStatusPill('Done', provider.doneCount),
+                    _buildStatusPill('Done', provider.doneCount, isNight),
                   ],
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // Random Task Button (Clean single button with task sign)
+              // Quick Task Button (Clean single button with task sign)
               Align(
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
@@ -643,12 +643,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isNight ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: isNight ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withOpacity(isNight ? 0.2 : 0.04),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -660,17 +660,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         Icon(
                           Icons.assignment_turned_in_rounded,
                           size: 16,
-                          color: isAfternoon
-                              ? const Color(0xFFEA580C)
-                              : const Color(0xFF2563EB),
+                          color: isNight
+                              ? const Color(0xFF38BDF8)
+                              : (isAfternoon
+                                  ? const Color(0xFFEA580C)
+                                  : const Color(0xFF2563EB)),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'Quick Task',
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
+                            color: isNight ? Colors.white : const Color(0xFF0F172A),
                           ),
                         ),
                       ],
@@ -897,17 +899,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFreshEmptyState(BuildContext context, TaskProvider provider) {
     final isTotalZero = provider.totalTasksCount == 0;
+    final isNight = provider.activeAtmosphereIndex == 2;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 34),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isNight ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isNight ? 0.2 : 0.03),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -920,14 +923,14 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 52,
             height: 52,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFF1F5F9),
+              color: isNight ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.inbox_outlined,
               size: 26,
-              color: Color(0xFF64748B),
+              color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
             ),
           ),
           const SizedBox(height: 14),
@@ -935,10 +938,10 @@ class _HomeScreenState extends State<HomeScreen> {
           // Clean, Professional Title: "No tasks set here yet"
           Text(
             isTotalZero ? 'No tasks set here yet' : 'No ${provider.statusFilter} tasks',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
+              color: isNight ? Colors.white : const Color(0xFF1E293B),
               letterSpacing: -0.2,
             ),
           ),
@@ -950,9 +953,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? 'Tap "+ New Task" below to schedule your first task.'
                 : 'There are no tasks with "${provider.statusFilter}" status.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
-              color: Color(0xFF64748B),
+              color: isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               height: 1.4,
             ),
           ),
@@ -969,7 +972,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
               decoration: BoxDecoration(
-                color: const Color(0xFF191A20),
+                color: isNight ? const Color(0xFF38BDF8) : const Color(0xFF191A20),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -978,15 +981,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     isTotalZero ? Icons.add : Icons.refresh,
                     size: 15,
-                    color: Colors.white,
+                    color: isNight ? const Color(0xFF0F172A) : Colors.white,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     isTotalZero ? 'New Task' : 'Show All Tasks',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: isNight ? const Color(0xFF0F172A) : Colors.white,
                     ),
                   ),
                 ],
@@ -998,7 +1001,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatusPill(String filterName, int count) {
+  Widget _buildStatusPill(String filterName, int count, bool isNight) {
     final provider = widget.provider;
     final isSelected = provider.statusFilter == filterName;
 
@@ -1008,15 +1011,19 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF191A20) : Colors.white,
+          color: isSelected
+              ? (isNight ? const Color(0xFF38BDF8) : const Color(0xFF191A20))
+              : (isNight ? const Color(0xFF1E293B) : Colors.white),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFF191A20) : const Color(0xFFEFECE6),
+            color: isSelected
+                ? (isNight ? const Color(0xFF38BDF8) : const Color(0xFF191A20))
+                : (isNight ? const Color(0xFF334155) : const Color(0xFFEFECE6)),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black.withOpacity(isNight ? 0.3 : 0.12),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -1030,14 +1037,18 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : const Color(0xFF6B6E77),
+                color: isSelected
+                    ? (isNight ? const Color(0xFF0F172A) : Colors.white)
+                    : (isNight ? Colors.white : const Color(0xFF6B6E77)),
               ),
             ),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withOpacity(0.2) : const Color(0xFFF1F5F9),
+                color: isSelected
+                    ? (isNight ? const Color(0xFF0F172A).withOpacity(0.2) : Colors.white.withOpacity(0.2))
+                    : (isNight ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -1045,7 +1056,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : const Color(0xFF475569),
+                  color: isSelected
+                      ? (isNight ? const Color(0xFF0F172A) : Colors.white)
+                      : (isNight ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
                 ),
               ),
             ),
