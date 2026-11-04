@@ -31,26 +31,23 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
     final currentPercent = (provider.atmosphereFillPercentage * 100).round();
 
     final Color accentColor = isNight
-        ? const Color(0xFF38BDF8)
+        ? const Color(0xFF6366F1)
         : (isAfternoon ? const Color(0xFFEA580C) : const Color(0xFF0284C7));
 
-    final Color cardBg = isNight
-        ? const Color(0xFF1E293B).withOpacity(0.96)
-        : Colors.white.withOpacity(0.96);
-
-    final Color textColor = isNight ? Colors.white : const Color(0xFF0F172A);
-    final Color subTextColor = isNight ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final Color borderColor = isNight ? const Color(0xFF475569) : const Color(0xFFCBD5E1);
+    const Color cardBg = Colors.white;
+    const Color textColor = Color(0xFF0F172A);
+    const Color subTextColor = Color(0xFF64748B);
+    const Color borderColor = Color(0xFFCBD5E1);
 
     return Container(
       margin: const EdgeInsets.only(top: 6, left: 16, right: 16),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: cardBg.withOpacity(0.96),
         borderRadius: BorderRadius.circular(_isExpanded ? 18 : 20),
         border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isNight ? 0.35 : 0.12),
+            color: Colors.black.withOpacity(0.10),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -60,7 +57,7 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeInOut,
         child: _isExpanded
-            ? _buildExpandedPanel(provider, textColor, subTextColor, accentColor, isNight)
+            ? _buildExpandedPanel(provider, textColor, subTextColor, accentColor)
             : _buildCollapsedPill(currentPercent, textColor, accentColor),
       ),
     );
@@ -98,7 +95,6 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
     Color textColor,
     Color subTextColor,
     Color accentColor,
-    bool isNight,
   ) {
     final currentPercent = (provider.atmosphereFillPercentage * 100).round();
 
@@ -130,7 +126,7 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.15),
+                      color: accentColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -165,9 +161,9 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
               activeTrackColor: accentColor,
-              inactiveTrackColor: isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              inactiveTrackColor: const Color(0xFFE2E8F0),
               thumbColor: accentColor,
-              overlayColor: accentColor.withOpacity(0.2),
+              overlayColor: accentColor.withOpacity(0.15),
             ),
             child: Slider(
               value: provider.atmosphereFillPercentage,
@@ -183,11 +179,11 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildPresetChip('0% Clean', 0.0, provider, accentColor, isNight),
-              _buildPresetChip('25%', 0.25, provider, accentColor, isNight),
-              _buildPresetChip('50%', 0.50, provider, accentColor, isNight),
-              _buildPresetChip('75%', 0.75, provider, accentColor, isNight),
-              _buildPresetChip('100% Full', 1.0, provider, accentColor, isNight),
+              _buildPresetChip('0% Clean', 0.0, provider, accentColor),
+              _buildPresetChip('25%', 0.25, provider, accentColor),
+              _buildPresetChip('50%', 0.50, provider, accentColor),
+              _buildPresetChip('75%', 0.75, provider, accentColor),
+              _buildPresetChip('100% Full', 1.0, provider, accentColor),
             ],
           ),
         ],
@@ -200,7 +196,6 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
     double targetVal,
     TaskProvider provider,
     Color accentColor,
-    bool isNight,
   ) {
     final isSelected = (provider.atmosphereFillPercentage - targetVal).abs() < 0.03;
 
@@ -209,9 +204,7 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
         decoration: BoxDecoration(
-          color: isSelected
-              ? accentColor
-              : (isNight ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          color: isSelected ? accentColor : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -219,9 +212,7 @@ class _ColorFillSliderToolState extends State<ColorFillSliderTool> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected
-                ? Colors.white
-                : (isNight ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+            color: isSelected ? Colors.white : const Color(0xFF475569),
           ),
         ),
       ),

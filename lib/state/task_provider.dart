@@ -1069,8 +1069,8 @@ class TaskProvider extends ChangeNotifier {
     final mode = activeAtmosphereIndex;
     final t = _atmosphereFillPercentage;
     if (mode == 2) {
-      // Night: lerp between clean dark slate and deep midnight navy
-      return Color.lerp(const Color(0xFF1E293B), const Color(0xFF070B14), t) ?? const Color(0xFF0F172A);
+      // Night: lerp between clean neutral off-white and serene cool moonlight slate tint
+      return Color.lerp(const Color(0xFFF8FAFC), const Color(0xFFD6E0EE), t) ?? const Color(0xFFE8EEF5);
     } else if (mode == 1) {
       // Afternoon: lerp between clean neutral warm off-white and rich golden sunset peach
       return Color.lerp(const Color(0xFFFAF8F5), const Color(0xFFFDCFA7), t) ?? const Color(0xFFFDE0C4);
