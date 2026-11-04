@@ -1056,15 +1056,27 @@ class TaskProvider extends ChangeNotifier {
     });
   }
 
-  // Atmospheric background tint matching the active mode
+  // Temporary design slider for fine-tuning screen color fill percentage (0.0 to 1.0)
+  double _atmosphereFillPercentage = 0.40;
+  double get atmosphereFillPercentage => _atmosphereFillPercentage;
+  void setAtmosphereFillPercentage(double value) {
+    _atmosphereFillPercentage = value.clamp(0.0, 1.0);
+    notifyListeners();
+  }
+
+  // Atmospheric background tint matching the active mode, interpolated by fill percentage
   Color get softAtmosphereColor {
     final mode = activeAtmosphereIndex;
+    final t = _atmosphereFillPercentage;
     if (mode == 2) {
-      return const Color(0xFF0F172A); // Rich Deep Midnight Navy Tint
+      // Night: lerp between clean dark slate and deep midnight navy
+      return Color.lerp(const Color(0xFF1E293B), const Color(0xFF070B14), t) ?? const Color(0xFF0F172A);
     } else if (mode == 1) {
-      return const Color(0xFFFDE0C4); // Rich Warm Sunset Apricot Glow
+      // Afternoon: lerp between clean neutral warm off-white and rich golden sunset peach
+      return Color.lerp(const Color(0xFFFAF8F5), const Color(0xFFFDCFA7), t) ?? const Color(0xFFFDE0C4);
     } else {
-      return const Color(0xFFD7ECFD); // Rich Fresh Morning Sky Blue Tint
+      // Morning: lerp between clean neutral off-white and rich fresh sky blue
+      return Color.lerp(const Color(0xFFF8FAFC), const Color(0xFFBCE0FD), t) ?? const Color(0xFFD7ECFD);
     }
   }
 
