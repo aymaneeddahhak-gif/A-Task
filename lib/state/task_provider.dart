@@ -1056,26 +1056,26 @@ class TaskProvider extends ChangeNotifier {
     });
   }
 
-  // Temporary design slider for fine-tuning screen color fill percentage (0.0 to 1.0)
-  double _atmosphereFillPercentage = 0.40;
-  double get atmosphereFillPercentage => _atmosphereFillPercentage;
-  void setAtmosphereFillPercentage(double value) {
-    _atmosphereFillPercentage = value.clamp(0.0, 1.0);
-    notifyListeners();
+  // Screen color fill percentages per mode: Morning 50%, Afternoon 75%, Night 75%
+  double get atmosphereFillPercentage {
+    final mode = activeAtmosphereIndex;
+    if (mode == 1) return 0.75; // Afternoon 75%
+    if (mode == 2) return 0.75; // Night 75%
+    return 0.50; // Morning 50%
   }
 
   // Atmospheric background tint matching the active mode, interpolated by fill percentage
   Color get softAtmosphereColor {
     final mode = activeAtmosphereIndex;
-    final t = _atmosphereFillPercentage;
+    final t = atmosphereFillPercentage;
     if (mode == 2) {
-      // Night: lerp between clean neutral off-white and serene cool moonlight slate tint
+      // Night (75%): lerp between clean neutral off-white and serene cool moonlight slate tint
       return Color.lerp(const Color(0xFFF8FAFC), const Color(0xFFD6E0EE), t) ?? const Color(0xFFE8EEF5);
     } else if (mode == 1) {
-      // Afternoon: lerp between clean neutral warm off-white and rich golden sunset peach
+      // Afternoon (75%): lerp between clean neutral warm off-white and rich golden sunset peach
       return Color.lerp(const Color(0xFFFAF8F5), const Color(0xFFFDCFA7), t) ?? const Color(0xFFFDE0C4);
     } else {
-      // Morning: lerp between clean neutral off-white and rich fresh sky blue
+      // Morning (50%): lerp between clean neutral off-white and rich fresh sky blue
       return Color.lerp(const Color(0xFFF8FAFC), const Color(0xFFBCE0FD), t) ?? const Color(0xFFD7ECFD);
     }
   }

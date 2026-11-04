@@ -3,7 +3,6 @@ import '../state/task_provider.dart';
 import '../widgets/circular_progress_ring.dart';
 import '../widgets/task_card.dart';
 import '../widgets/content_skeleton_loader.dart';
-import '../widgets/color_fill_slider_tool.dart';
 
 class HomeScreen extends StatefulWidget {
   final TaskProvider provider;
@@ -702,15 +701,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 80),
             ],
-          ),
-        ),
-
-        // 3. TEMPORARY DESIGN TOOL: Color Fill Percentage Slider on Top
-        // (Allows testing and selecting the desired screen fill style in real-time)
-        SafeArea(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ColorFillSliderTool(provider: provider),
           ),
         ),
       ],
