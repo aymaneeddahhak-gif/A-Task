@@ -14,6 +14,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = widget.provider;
@@ -52,203 +66,232 @@ class _HomeScreenState extends State<HomeScreen> {
     final Color nameColor = isNight ? Colors.white : const Color(0xFF0F172A);
     final Color headlineColor = isNight ? Colors.white : const Color(0xFF0F172A);
 
-    // 85% Atmosphere Spread Gradients:
-    // The main vibrant atmospheric color stays fixed at the top and dissolves into the soft down-page color!
+    // Seamless Feathered Atmosphere Spread Gradients:
+    // Blends smoothly from the sky colors down into softDownColor with 100% invisible feathering!
     final List<Color> gradientColors;
+    final List<double> stops;
     if (mode == 0) {
-      // Sunny Morning Sky: crisp sky blue blended with warm golden morning sunshine
+      // Sunny Morning Sky: Sky blue -> soft cyan -> warm sunshine gold -> feathered fade into base fill
       gradientColors = [
         const Color(0xFF93C5FD),
         const Color(0xFFBAE6FD),
-        const Color(0xFFFEF08A).withOpacity(0.65),
-        const Color(0xFFE8F4FE),
+        const Color(0xFFFEF3C7).withOpacity(0.65),
+        const Color(0xFFE0F2FE).withOpacity(0.70),
+        softDownColor.withOpacity(0.60),
+        softDownColor.withOpacity(0.92),
         softDownColor,
       ];
+      stops = const [0.0, 0.22, 0.44, 0.65, 0.82, 0.94, 1.0];
     } else if (mode == 1) {
-      // Warm Sunset Afternoon: rich sunset amber & orange fading into soft warm glow
+      // Warm Sunset Afternoon: Sunset amber & orange -> golden apricot -> feathered fade into base fill
       gradientColors = [
         const Color(0xFFFF6433),
         const Color(0xFFFFA040),
-        const Color(0xFFFFCC88).withOpacity(0.85),
-        const Color(0xFFFFF0DC).withOpacity(0.65),
+        const Color(0xFFFFD49E).withOpacity(0.70),
+        const Color(0xFFFFF1E0).withOpacity(0.70),
+        softDownColor.withOpacity(0.60),
+        softDownColor.withOpacity(0.92),
         softDownColor,
       ];
+      stops = const [0.0, 0.22, 0.44, 0.65, 0.82, 0.94, 1.0];
     } else {
-      // Deep Midnight Dark Blue with Stars fading into soft midnight dark
+      // Deep Midnight Dark Blue with Stars -> twilight dusk mist -> feathered fade into base fill
       gradientColors = [
         const Color(0xFF0B1021),
         const Color(0xFF0F172A),
-        const Color(0xFF1B254B).withOpacity(0.85),
+        const Color(0xFF1E293B).withOpacity(0.80),
+        const Color(0xFF475569).withOpacity(0.40),
+        const Color(0xFF94A3B8).withOpacity(0.20),
+        softDownColor.withOpacity(0.90),
         softDownColor,
       ];
+      stops = const [0.0, 0.22, 0.44, 0.65, 0.80, 0.93, 1.0];
     }
-
-    final stops = (mode == 0 || mode == 1)
-        ? const [0.0, 0.85 * 0.35, 0.85 * 0.65, 0.85 * 0.9, 1.0]
-        : const [0.0, 0.85 * 0.5, 0.85 * 0.85, 1.0];
 
     return Stack(
       children: [
-        // 0. Base Screen Fill: The mode softly touches the whole lower page!
+        // 0. Base Screen Fill: The uniform base color for the entire page
         Positioned.fill(
           child: Container(
             color: softDownColor,
           ),
         ),
 
-        // 1. Atmosphere Gradient Background: Main color stays FIXED at the top!
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 275,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: gradientColors,
-                stops: stops,
+        // 1. Atmosphere Header that scrolls with the page and smoothly fades out!
+        // As the user scrolls down, the sky gradient, sun, clouds, and stars scroll up with the content.
+        // Down below in the tasks area, the background is clean without any mode graphics or cutoff lines.
+        AnimatedBuilder(
+          animation: _scrollController,
+          builder: (context, _) {
+            final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+            final overscroll = scrollOffset < 0 ? -scrollOffset : 0.0;
+            final topPos = scrollOffset > 0 ? -scrollOffset : 0.0;
+            final totalHeight = 440.0 + overscroll;
+
+            return Positioned(
+              top: topPos,
+              left: 0,
+              right: 0,
+              height: totalHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Atmosphere Gradient Background with Seamless Feathered Fade
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: gradientColors,
+                          stops: stops,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Night Sky Stars Decor (Only in Night Mode)
+                  if (isNight) ...[
+                    Positioned(
+                      top: 22,
+                      right: 88,
+                      child: Text('✦', style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 13)),
+                    ),
+                    Positioned(
+                      top: 48,
+                      right: 140,
+                      child: Text('★', style: TextStyle(color: const Color(0xFFFDE047).withOpacity(0.75), fontSize: 10)),
+                    ),
+                    Positioned(
+                      top: 60,
+                      left: 170,
+                      child: Text('✧', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+                    ),
+                    Positioned(
+                      top: 30,
+                      left: 130,
+                      child: Text('·', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 20, fontWeight: FontWeight.bold)),
+                    ),
+                    Positioned(
+                      top: 76,
+                      right: 56,
+                      child: Text('✧', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 9)),
+                    ),
+                    Positioned(
+                      top: 24,
+                      right: 32,
+                      child: Text('🌙', style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.9))),
+                    ),
+                  ],
+
+                  // Morning Warm Sunshine & Sun Orb Decor (Only in Morning Mode)
+                  if (mode == 0) ...[
+                    Positioned(
+                      top: -10,
+                      right: 20,
+                      child: Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              const Color(0xFFFDE047).withOpacity(0.95),
+                              const Color(0xFFFBBF24).withOpacity(0.65),
+                              const Color(0xFFBAE6FD).withOpacity(0.0),
+                            ],
+                            stops: const [0.0, 0.55, 1.0],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFACC15).withOpacity(0.45),
+                              blurRadius: 34,
+                              spreadRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 48,
+                      right: 8,
+                      child: Container(
+                        width: 72,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.45),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFDE047).withOpacity(0.30),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // Afternoon Radiant Sunset Decor (Only in Afternoon Mode)
+                  if (mode == 1) ...[
+                    // Glowing Setting Sun Orb
+                    Positioned(
+                      top: -8,
+                      right: 22,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              const Color(0xFFFFBF42).withOpacity(0.95),
+                              const Color(0xFFFF6D3B).withOpacity(0.65),
+                              const Color(0xFFFA5A00).withOpacity(0.0),
+                            ],
+                            stops: const [0.0, 0.55, 1.0],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF7A00).withOpacity(0.40),
+                              blurRadius: 32,
+                              spreadRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Soft Golden-Hour Horizon Cloud
+                    Positioned(
+                      top: 52,
+                      right: 6,
+                      child: Container(
+                        width: 76,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF9E3D).withOpacity(0.25),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ),
-          ),
+            );
+          },
         ),
 
-        // 2. Night Sky Stars Decor (Only in Night Mode)
-        if (isNight) ...[
-          Positioned(
-            top: 22,
-            right: 88,
-            child: Text('✦', style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 13)),
-          ),
-          Positioned(
-            top: 48,
-            right: 140,
-            child: Text('★', style: TextStyle(color: const Color(0xFFFDE047).withOpacity(0.75), fontSize: 10)),
-          ),
-          Positioned(
-            top: 60,
-            left: 170,
-            child: Text('✧', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
-          ),
-          Positioned(
-            top: 30,
-            left: 130,
-            child: Text('·', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 20, fontWeight: FontWeight.bold)),
-          ),
-          Positioned(
-            top: 76,
-            right: 56,
-            child: Text('✧', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 9)),
-          ),
-          Positioned(
-            top: 24,
-            right: 32,
-            child: Text('🌙', style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.9))),
-          ),
-        ],
-
-        // 3. Morning Warm Sunshine & Sun Orb Decor (Only in Morning Mode)
-        if (mode == 0) ...[
-          Positioned(
-            top: -10,
-            right: 20,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFFDE047).withOpacity(0.95),
-                    const Color(0xFFFBBF24).withOpacity(0.65),
-                    const Color(0xFFBAE6FD).withOpacity(0.0),
-                  ],
-                  stops: const [0.0, 0.55, 1.0],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFACC15).withOpacity(0.45),
-                    blurRadius: 34,
-                    spreadRadius: 8,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: 48,
-            right: 8,
-            child: Container(
-              width: 72,
-              height: 11,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.45),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFDE047).withOpacity(0.30),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-
-        // 4. Afternoon Radiant Sunset Decor (Only in Afternoon Mode)
-        if (mode == 1) ...[
-          // Glowing Setting Sun Orb
-          Positioned(
-            top: -8,
-            right: 22,
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFFFBF42).withOpacity(0.95),
-                    const Color(0xFFFF6D3B).withOpacity(0.65),
-                    const Color(0xFFFA5A00).withOpacity(0.0),
-                  ],
-                  stops: const [0.0, 0.55, 1.0],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF7A00).withOpacity(0.40),
-                    blurRadius: 32,
-                    spreadRadius: 6,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Soft Golden-Hour Horizon Cloud
-          Positioned(
-            top: 52,
-            right: 6,
-            child: Container(
-              width: 76,
-              height: 12,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.35),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF9E3D).withOpacity(0.25),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-
-        // 5. Scrollable Screen Content
+        // 2. Scrollable Screen Content
         SafeArea(
           child: ListView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             children: [
               // 1. Top Header Bar: Left (User Avatar + Good Morning/Afternoon/Evening + AYMANE)
