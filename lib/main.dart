@@ -64,7 +64,7 @@ class _MainTabContainerState extends State<MainTabContainer> {
         // Dynamic phone dimension calculation: fits cleanly inside browser viewport height so page NEVER overflows/scrolls!
         final availableHeight = constraints.maxHeight;
         final double phoneHeight = (availableHeight - 56.0).clamp(500.0, 840.0);
-        final double phoneWidth = (phoneHeight * (418.0 / 840.0)).clamp(360.0, 420.0);
+        final double phoneWidth = (phoneHeight * (440.0 / 840.0)).clamp(380.0, 440.0);
 
         final mode = _provider.activeAtmosphereIndex;
         final softBg = _provider.softAtmosphereColor;

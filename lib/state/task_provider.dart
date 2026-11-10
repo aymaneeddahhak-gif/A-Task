@@ -1090,8 +1090,25 @@ class TaskProvider extends ChangeNotifier {
   }
 
   void _initializeDefaultData() {
-    // Fresh Entry: starts with 0 tasks as requested
-    _tasks = [];
+    _tasks = [
+      TaskModel(
+        id: 1,
+        title: 'Afternoon Sunset Tempo Run',
+        description: 'Steady outdoor pace along the hillside path with warm sunset breeze.',
+        dateString: 'Today',
+        startTime: '05:30 PM',
+        endTime: '06:30 PM',
+        priority: 'High',
+        project: 'Outdoor Run',
+        tags: 'Running,Sunset Pace,Endurance',
+        colorTheme: 'peach',
+        timeSection: 'Afternoon',
+        status: 'In Progress',
+        isCompleted: false,
+        assigneeCount: 1,
+        routineType: 'Afternoon Run',
+      ),
+    ];
 
     _routines = [
       RoutineItem(
