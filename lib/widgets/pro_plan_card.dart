@@ -238,3 +238,126 @@ class _ProPlanCardState extends State<ProPlanCard> {
     );
   }
 }
+
+class ProUpgradeCard extends StatelessWidget {
+  final VoidCallback? onClose;
+  final VoidCallback? onUpgrade;
+
+  const ProUpgradeCard({
+    super.key,
+    this.onClose,
+    this.onUpgrade,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 355,
+      height: 385,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAF9),
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 36,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Badge & Close Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD8FBB5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  '4x Pro',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1C1917),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: onClose,
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 6),
+                    ],
+                  ),
+                  child: const Icon(Icons.close, size: 18, color: Color(0xFF1C1917)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+
+          // Title & Description
+          const Text(
+            'Upgrade To Pro',
+            style: TextStyle(
+              fontSize: 23,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.4,
+              color: Color(0xFF1C1917),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Unlock Automations And\nUnlimited Escalation Rules.',
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.45,
+              color: Color(0xFF555A62),
+            ),
+          ),
+          const Spacer(),
+
+          // Upgrade Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: onUpgrade,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1C1917),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(26),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Upgrade Plan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
