@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/task_model.dart';
 
@@ -103,14 +102,15 @@ class TaskCardTheme {
   }
 }
 
-/// Modern Vector Task Card
-/// Implemented according to user specifications:
-/// - Container: 36px rounded corners, Color(0xFFFAFAF9), soft 36px ambient shadow.
-/// - Vector Artwork: 'assets/images/cards/morningrun.jpg' covering the right ~60%
-///   with X: +90px, Y: -54px focal shift and 94° feathered alpha fade mask into card body.
-/// - Header: Lime pill badge ('Color(0xFFD8FBB5)') + circular white action buttons.
-/// - Typography: 23px SemiBold title, 15px description (#555A62).
-/// - Footer: Elevated white pill action button with start-end times and completion indicator.
+/// Scenic Tactile Curled Task Card (100% 1-to-1 match with user reference)
+/// Features:
+/// - Physical 3D curled top-left paper corner with cast shadow & highlight spine.
+/// - Left side origami parallelogram paper mosaic with subtle golden creases.
+/// - Right side full scenic vector runner artwork (morningrun.jpg) smoothly blended.
+/// - Top header pills: [⏱ 1h] (left of curl) and [In Progress] (right).
+/// - Bold title, short subtitle, and dual rows of clean white capsule chips.
+/// - Sleek obsidian-to-rose gradient progress bar with [TASK PROGRESS] & [% COMPLETED].
+/// - Bottom capsule pills: [⏱ Start - End Time] and [⚡ Routine Horizon].
 class TaskCard extends StatelessWidget {
   final TaskModel task;
   final VoidCallback onTap;
@@ -125,428 +125,445 @@ class TaskCard extends StatelessWidget {
     required this.onToggleStarred,
   }) : super(key: key);
 
-  String _resolveTaskImage(TaskModel task) {
-    // Currently loads 'assets/images/cards/morningrun.jpg', ready to resolve
-    // coffee, work, study, etc. as the user provides additional images.
-    final lowerTitle = task.title.toLowerCase();
-    final lowerTags = task.tags.toLowerCase();
-
-    if (lowerTitle.contains('coffee') || lowerTags.contains('coffee')) {
-      return 'assets/images/cards/morningrun.jpg';
-    }
-    if (lowerTitle.contains('study') || lowerTitle.contains('coding') || lowerTags.contains('study')) {
-      return 'assets/images/cards/morningrun.jpg';
-    }
-    if (lowerTitle.contains('night') || lowerTitle.contains('evening')) {
-      return 'assets/images/cards/morningrun.jpg';
-    }
-    return 'assets/images/cards/morningrun.jpg';
-  }
+  static const double _curlSize = 34.0;
+  static const double _borderRadius = 28.0;
 
   @override
   Widget build(BuildContext context) {
-    final theme = TaskCardTheme.forTheme(task.colorTheme);
     final progressData = task.dynamicProgress;
     final progressFraction = progressData.key;
-    final progressLabel = progressData.value;
-    final imageAsset = _resolveTaskImage(task);
+    final progressPercent = (progressFraction * 100).round();
+
+    final statusLabel = task.isCompleted
+        ? 'Completed'
+        : (task.status.isNotEmpty && task.status != 'To Do'
+            ? task.status
+            : (task.priority.toLowerCase() == 'high' ? 'Locked In' : 'In Progress'));
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardW = constraints.maxWidth;
-        // Scale proportional to standard 630px canvas so offset translates seamlessly
-        final scale = (cardW / 630.0).clamp(0.60, 1.10);
-        final offsetX = 90.0 * scale;
-        final offsetY = -54.0 * scale;
-        final artworkWidth = cardW * 0.60;
+        final isNarrow = cardW < 360;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFAFAF9),
-            borderRadius: BorderRadius.circular(36),
-            border: Border.all(
-              color: const Color(0xFFE7E5E4),
-              width: 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 36,
-                offset: const Offset(0, 16),
-              ),
-            ],
-          ),
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              // 1. RIGHT VISUAL SLOT: Vector illustration with user parameters
-              // Covers right 60% with X: +90px, Y: -54px translation
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: artworkWidth,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(36),
-                    bottomRight: Radius.circular(36),
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Artwork translated by +90px X, -54px Y
-                      Transform.translate(
-                        offset: Offset(offsetX, offsetY),
-                        child: Image.asset(
-                          imageAsset,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          filterQuality: FilterQuality.medium,
-                        ),
-                      ),
-
-                      // Alpha Fade Mask: 94° horizontal fade progressively dissolving
-                      // the left side of the artwork into card background from 0% to 50% width
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                const Color(0xFFFAFAF9),
-                                const Color(0xFFFAFAF9).withOpacity(0.95),
-                                const Color(0xFFFAFAF9).withOpacity(0.40),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.18, 0.45, 0.70],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Bottom feather so artwork blends smoothly above bottom action button
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.transparent,
-                                const Color(0xFFFAFAF9).withOpacity(0.70),
-                                const Color(0xFFFAFAF9),
-                              ],
-                              stops: const [0.0, 0.65, 0.88, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+              // 1. Soft Ambient Card Shadow + Lifted Peel Shadow
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _CurledCardAmbientShadowPainter(
+                    curlSize: _curlSize,
+                    borderRadius: _borderRadius,
                   ),
                 ),
               ),
 
-              // 2. FOREGROUND CARD CONTENT: Header, Text, Chips, Progress & Action
-              Padding(
-                padding: const EdgeInsets.all(26),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header: Badge (Left) & Circular Action Buttons (Right)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Left: Pill Badge (matching 4x Pro style)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD8FBB5),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                task.cleanDuration.isNotEmpty ? task.cleanDuration : '4x Pro',
-                                style: const TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1C1917),
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                            ),
-                            if (task.routineType != 'None') ...[
-                              const SizedBox(width: 8),
-                              _buildRoutinePill(task.routineType),
-                            ],
-                          ],
-                        ),
-
-                        // Right: Circular Action Buttons (Star & Complete Toggle)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Star Circle Button
-                            InkWell(
-                              onTap: onToggleStarred,
-                              borderRadius: BorderRadius.circular(18),
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 6,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  task.isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
-                                  size: 19,
-                                  color: task.isStarred ? const Color(0xFFF59E0B) : const Color(0xFF1C1917),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // Complete Circle Toggle Button
-                            InkWell(
-                              onTap: onToggleComplete,
-                              borderRadius: BorderRadius.circular(18),
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: task.isCompleted ? const Color(0xFFD8FBB5) : Colors.white,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 6,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  task.isCompleted ? Icons.check_rounded : Icons.check_circle_outline_rounded,
-                                  size: 18,
-                                  color: task.isCompleted ? const Color(0xFF166534) : const Color(0xFF1C1917),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // Title & Description (Left column constrained so text never overlaps artwork focal point)
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: math.max(180, cardW * 0.60),
+              // 2. Clipped Card Body (Corner cut at fold line)
+              ClipPath(
+                clipper: _TopLeftCornerCurlClipper(
+                  curlSize: _curlSize,
+                  borderRadius: _borderRadius,
+                ),
+                child: GestureDetector(
+                  onTap: onTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(_borderRadius),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1.0,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            task.title,
-                            style: TextStyle(
-                              fontSize: 23,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.4,
-                              color: task.isCompleted ? const Color(0xFF94A3B8) : const Color(0xFF1C1917),
-                              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    ),
+                    child: Stack(
+                      children: [
+                        // A. Composite Card Background (Mosaic Tiles + Runner Illustration)
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(_borderRadius),
+                            child: Image.asset(
+                              'assets/images/cards/card_composite_bg.png',
+                              fit: BoxFit.cover,
+                              alignment: Alignment.centerRight,
                             ),
                           ),
-                          if (task.description.isNotEmpty) ...[
-                            const SizedBox(height: 10),
-                            Text(
-                              task.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                height: 1.45,
-                                color: Color(0xFF555A62),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                        ),
 
-                    const SizedBox(height: 16),
-
-                    // Meta Chips: Category Tag, Date, Project
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: math.max(200, cardW * 0.68),
-                      ),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ...task.tagList.take(2).map((tag) => Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  tag,
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1C1917),
-                                  ),
-                                ),
-                              )),
-                          if (task.project.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE5E7EB)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                        // B. Foreground Card Content Layout
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            isNarrow ? 14 : 20,
+                            16,
+                            isNarrow ? 14 : 20,
+                            16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Top Header Row: [ ⏱ Duration ] (Left) & [ Status Pill ] + [ Star ] (Right)
+                              Row(
                                 children: [
-                                  Icon(
-                                    task.hasMeeting ? Icons.videocam_outlined : Icons.folder_outlined,
-                                    size: 12,
-                                    color: const Color(0xFF555A62),
+                                  // Left pill beside the 3D paper curl
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 36),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.schedule_rounded,
+                                          size: 13,
+                                          color: Color(0xFFE11D48),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          task.cleanDuration.isNotEmpty ? task.cleanDuration : '1h',
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    task.project,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF1C1917),
+
+                                  const Spacer(),
+
+                                  // Right: Status Pill
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      statusLabel,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: task.isCompleted
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFFBE185D),
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 6),
+
+                                  // Star Action Button
+                                  GestureDetector(
+                                    onTap: onToggleStarred,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        task.isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
+                                        size: 16,
+                                        color: task.isStarred ? const Color(0xFFF59E0B) : const Color(0xFF94A3B8),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                        ],
-                      ),
-                    ),
 
-                    const SizedBox(height: 18),
+                              const SizedBox(height: 14),
 
-                    // Progress Line
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          task.isCompleted ? 'TASK COMPLETED' : 'TASK PROGRESS',
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                            color: Color(0xFF78716C),
-                          ),
-                        ),
-                        Text(
-                          progressLabel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: task.isCompleted ? const Color(0xFF166534) : const Color(0xFF1C1917),
+                              // Title & Subtitle (Left column constrained for perfect framing)
+                              Padding(
+                                padding: EdgeInsets.only(right: isNarrow ? 20 : cardW * 0.35),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      task.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: isNarrow ? 17 : 20,
+                                        fontWeight: FontWeight.w800,
+                                        color: task.isCompleted
+                                            ? const Color(0xFF94A3B8)
+                                            : const Color(0xFF0F172A),
+                                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      task.description.isNotEmpty
+                                          ? task.description
+                                          : 'Steady outdoor pace along the hillside path with warm sunset breeze.',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF475569),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Tag Chips: Row 1
+                              Padding(
+                                padding: EdgeInsets.only(right: isNarrow ? 10 : cardW * 0.35),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    if (task.tagList.isNotEmpty)
+                                      ...task.tagList.take(3).map((tag) => _buildPillChip(tag))
+                                    else ...[
+                                      _buildPillChip('Running'),
+                                      _buildPillChip('Sunset Pace'),
+                                      _buildPillChip('Endurance'),
+                                    ],
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 6),
+
+                              // Tag Chips: Row 2 (Date & Project/Category)
+                              Padding(
+                                padding: EdgeInsets.only(right: isNarrow ? 10 : cardW * 0.35),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    _buildPillChip(
+                                      task.dateString.isNotEmpty ? task.dateString : 'Today',
+                                      icon: Icons.calendar_today_outlined,
+                                    ),
+                                    _buildPillChip(
+                                      task.project.isNotEmpty ? task.project : 'Outdoor Run',
+                                      icon: Icons.folder_outlined,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              // Task Progress Bar Section
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'TASK PROGRESS',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                      color: Color(0xFF334155),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.92),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 4,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      '$progressPercent% COMPLETED',
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: task.isCompleted
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 5),
+
+                              // Sleek Obsidian-to-Rose Gradient Progress Bar
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: Container(
+                                  height: 5.5,
+                                  width: double.infinity,
+                                  color: const Color(0xFFE2E8F0),
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: progressFraction.clamp(0.03, 1.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(3),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFF1E1B2E), // Dark obsidian
+                                            Color(0xFF831843), // Deep berry
+                                            Color(0xFFE11D48), // Vibrant rose
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Bottom Row: [ ⏱ Time ] (Left) & [ ⚡ Routine ] (Right)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Left Time Pill (Tap to toggle complete)
+                                  Flexible(
+                                    child: GestureDetector(
+                                      onTap: onToggleComplete,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isNarrow ? 9 : 13,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(18),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.04),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              task.isCompleted
+                                                  ? Icons.check_circle_rounded
+                                                  : Icons.schedule_rounded,
+                                              size: 14,
+                                              color: task.isCompleted
+                                                  ? const Color(0xFF16A34A)
+                                                  : const Color(0xFFE11D48),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Flexible(
+                                              child: Text(
+                                                '${task.startTime} - ${task.endTime}',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF0F172A),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 8),
+
+                                  // Right Category / Routine Pill
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isNarrow ? 9 : 13,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF3E8FF),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(color: const Color(0xFFE9D5FF), width: 0.8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.bolt_rounded,
+                                          size: 14,
+                                          color: Color(0xFF9333EA),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          task.routineType != 'None'
+                                              ? '${task.routineType} Routine'
+                                              : (task.tagList.isNotEmpty ? task.tagList.first : 'Afternoon Run'),
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF7E22CE),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progressFraction,
-                        minHeight: 6,
-                        backgroundColor: const Color(0xFFE7E5E4),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          task.isCompleted ? const Color(0xFF16A34A) : theme.accentColor,
-                        ),
-                      ),
-                    ),
+                  ),
+                ),
+              ),
 
-                    const SizedBox(height: 18),
-
-                    // Bottom Elevated Pill Action Button (matching Upgrade Plan style from user code)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: onTap,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF1C1917),
-                          elevation: 4,
-                          shadowColor: Colors.black.withOpacity(0.08),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(26),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.schedule, size: 16, color: Color(0xFF1C1917)),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${task.startTime} - ${task.endTime}',
-                                  style: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1C1917),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  task.isCompleted ? 'Completed' : 'View Details',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: task.isCompleted ? const Color(0xFF166534) : const Color(0xFF555A62),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.arrow_forward, size: 16),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+              // 3. 3D Curled Paper Flap on Top-Left Corner
+              Positioned(
+                top: 0,
+                left: 0,
+                width: _curlSize * 1.6,
+                height: _curlSize * 1.6,
+                child: const IgnorePointer(
+                  child: CustomPaint(
+                    painter: _TopLeftCornerCurlFlapPainter(
+                      curlSize: _curlSize,
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -556,28 +573,195 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRoutinePill(String routineType) {
+  Widget _buildPillChip(String text, {IconData? icon}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 4.5),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: Text(
-        '$routineType Routine',
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF1C1917),
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 12, color: const Color(0xFF64748B)),
+            const SizedBox(width: 4.5),
+          ],
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+        ],
       ),
     );
+  }
+}
+
+/// Clips the card body along the diagonal fold line of the top-left curl
+class _TopLeftCornerCurlClipper extends CustomClipper<Path> {
+  final double curlSize;
+  final double borderRadius;
+
+  const _TopLeftCornerCurlClipper({
+    required this.curlSize,
+    required this.borderRadius,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final c = curlSize.clamp(14.0, size.width * 0.45);
+    final r = borderRadius;
+
+    final path = Path();
+    path.moveTo(c, 0);
+    path.lineTo(size.width - r, 0);
+    path.quadraticBezierTo(size.width, 0, size.width, r);
+    path.lineTo(size.width, size.height - r);
+    path.quadraticBezierTo(size.width, size.height, size.width - r, size.height);
+    path.lineTo(r, size.height);
+    path.quadraticBezierTo(0, size.height, 0, size.height - r);
+    path.lineTo(0, c);
+    path.quadraticBezierTo(c * 0.46, c * 0.46, c, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _TopLeftCornerCurlClipper oldClipper) {
+    return oldClipper.curlSize != curlSize || oldClipper.borderRadius != borderRadius;
+  }
+}
+
+/// Paints the ambient card shadow plus the shadow underneath the curled top-left corner
+class _CurledCardAmbientShadowPainter extends CustomPainter {
+  final double curlSize;
+  final double borderRadius;
+
+  const _CurledCardAmbientShadowPainter({
+    required this.curlSize,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = curlSize.clamp(14.0, size.width * 0.45);
+    final r = borderRadius;
+
+    final shadowPath = Path()
+      ..moveTo(c, 2)
+      ..lineTo(size.width - r, 2)
+      ..quadraticBezierTo(size.width, 2, size.width, r + 2)
+      ..lineTo(size.width, size.height - r)
+      ..quadraticBezierTo(size.width, size.height + 3, size.width - r, size.height + 3)
+      ..lineTo(r, size.height + 3)
+      ..quadraticBezierTo(0, size.height + 3, 0, size.height - r)
+      ..lineTo(2, c)
+      ..close();
+
+    canvas.drawPath(
+      shadowPath,
+      Paint()
+        ..color = const Color(0xFF0F172A).withOpacity(0.08)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CurledCardAmbientShadowPainter oldDelegate) {
+    return oldDelegate.curlSize != curlSize;
+  }
+}
+
+/// Paints the physical 3D paper curl flap on the top-left corner
+class _TopLeftCornerCurlFlapPainter extends CustomPainter {
+  final double curlSize;
+
+  const _TopLeftCornerCurlFlapPainter({
+    required this.curlSize,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = curlSize;
+
+    // Drop shadow cast by the lifted paper flap onto the desk
+    final shadowPath = Path()
+      ..moveTo(0, c)
+      ..quadraticBezierTo(c * 0.46, c * 0.46, c, 0)
+      ..quadraticBezierTo(c * 1.05, c * 0.68, c * 0.96, c * 0.96)
+      ..quadraticBezierTo(c * 0.68, c * 1.05, 0, c)
+      ..close();
+
+    canvas.drawPath(
+      shadowPath.shift(const Offset(2.5, 3.5)),
+      Paint()
+        ..color = Colors.black.withOpacity(0.20)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.5),
+    );
+
+    // Folded paper face
+    final flapPath = Path()
+      ..moveTo(0, c)
+      ..quadraticBezierTo(c * 0.46, c * 0.46, c, 0)
+      ..quadraticBezierTo(c * 0.94, c * 0.56, c * 0.88, c * 0.88)
+      ..quadraticBezierTo(c * 0.56, c * 0.94, 0, c)
+      ..close();
+
+    final flapPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white,
+          Color(0xFFF8FAFC),
+          Color(0xFFE2E8F0),
+          Color(0xFFCBD5E1),
+        ],
+        stops: [0.0, 0.38, 0.78, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, c, c));
+
+    canvas.drawPath(flapPath, flapPaint);
+
+    // Spine highlight along the crease line
+    final spineHighlight = Path()
+      ..moveTo(1, c - 1)
+      ..quadraticBezierTo(c * 0.47, c * 0.47, c - 1, 1);
+    canvas.drawPath(
+      spineHighlight,
+      Paint()
+        ..color = Colors.white.withOpacity(0.95)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
+    );
+
+    // Subtle edge definition
+    final innerEdge = Path()
+      ..moveTo(c, 0)
+      ..quadraticBezierTo(c * 0.94, c * 0.56, c * 0.88, c * 0.88)
+      ..quadraticBezierTo(c * 0.56, c * 0.94, 0, c);
+    canvas.drawPath(
+      innerEdge,
+      Paint()
+        ..color = Colors.white.withOpacity(0.80)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TopLeftCornerCurlFlapPainter oldDelegate) {
+    return oldDelegate.curlSize != curlSize;
   }
 }
